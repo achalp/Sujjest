@@ -174,9 +174,6 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject sentiment;
                 try {
 
-                    reviews = yelpProcessor.getReviews(key);
-                    Log.d("Reviews", reviews.toString());
-                    m.getValue().put("reviews", reviews);
                     sentiment = m.getValue().getJSONObject("sentiment");
                     strBuilder.append(m.getValue().get("biz") + " "
                             + sentiment.getJSONObject("docSentiment").getString("score") + " "
@@ -187,10 +184,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     Log.d("Error", "Error: JSONException  retrieving restaurants from Yelp " + e.getMessage());
                     //   break;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.d("Error", "Error: IOException  retrieving restaurants from Yelp " + e.getMessage());
-                    //break;
+
                 }
             }
             txt.setText(strBuilder.toString());
