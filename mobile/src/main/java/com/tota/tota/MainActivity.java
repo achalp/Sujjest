@@ -12,12 +12,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.tota.tota.Entity.Restaurant;
+import com.tota.tota.Entity.Review;
+import com.tota.tota.Entity.Sentiment;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Map;
 
 
@@ -26,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     public final static String REST_NAME = "mediterranean-kitchen-bellevue";
     public final static String KIMONO_REVIEWS_API_END_POINT = "https://www.kimonolabs.com/api/ondemand/7kv6gyv0?kimpath2=";
     //"http://www.kimonolabs.com/api/ondemand/3bjrhisw?find_loc=Bellevue%2CWA";
+
+    public static ArrayList<Restaurant> restaurantArrayList=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,14 +79,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private class RequestTask extends AsyncTask<String, String, Map<String, JSONObject>> {
+    private class RequestTask extends AsyncTask<String, String, ArrayList<Restaurant>> {
         // make a request to the specified url
 
         YelpProcessor yelpProcessor = new YelpProcessor();
         AlchemyProcessor alchemyProcessor = new AlchemyProcessor();
 
         @Override
-        protected Map<String, JSONObject> doInBackground(String... uri) {
+        protected ArrayList<Restaurant> doInBackground(String... uri) {
             HttpURLConnection urlConnection;
 
             URL url;
@@ -94,13 +102,11 @@ public class MainActivity extends AppCompatActivity {
 
             //Get list of restaurants from Yelp.
             Map<String, JSONObject> restaurants = null;
+            ArrayList<Restaurant> restaurantArrayList = null;
             try {
-                restaurants = yelpProcessor.getRestaurantsForCityState();
+                restaurantArrayList = yelpProcessor.getRestaurantsForCityState();
 
-            } catch (JSONException e) {
-                Log.e("Error", e.toString());
-                // return "Error: JSONException  retrieving restaurants from Yelp";
-            } catch (IOException e) {
+            }  catch (IOException e) {
                 Log.e("Error", e.toString());
                 //return "Error: IOExeption retrieving restaurants from Yelp";
             }
@@ -108,31 +114,37 @@ public class MainActivity extends AppCompatActivity {
 
             // At this point, the Map restaurants has the first 10 results from yelps city specific page.
             // Key = Restaurants key from provider
-            // Value - JSON object
-
 
             // For every restaurant in 'restaurants' grab the first N (page 1 for now) reviews and
             // populate the Map reviews.
             // key = restaurant key from provider#review number so for eg. restaurant-of-pallino-2#1
-            // Value = JSON object
 
             strBuilder = new StringBuilder();
-            for (Map.Entry<String, JSONObject> m : restaurants.entrySet()) {
+          //  for (Map.Entry<String, JSONObject> m : restaurants.entrySet())
+            for( Restaurant r: restaurantArrayList)
+            {
 
-                String key = m.getKey();
+                String key = r.getBiz_key();
+                ArrayList<Review> reviewArrayList;
+                Sentiment sentiment;
+
                 JSONObject reviews;
-                JSONObject sentiment;
+
+                //JSONObject sentiment;
                 try {
 
-                    reviews = yelpProcessor.getReviews(key);
-                    Log.d("Reviews", reviews.toString());
-                    m.getValue().put("reviews", reviews);
-                    sentiment = alchemyProcessor.getSentiment(key, reviews);
-                    m.getValue().put("sentiment", sentiment);
-                    strBuilder.append(m.getValue().get("biz") + " "
-                            + sentiment.getJSONObject("docSentiment").getString("score") + " "
-                            + sentiment.getJSONObject("docSentiment").getString("type") + " "
-                            + sentiment.getJSONObject("docSentiment").getString("mixed") + "\n");
+                    reviewArrayList = yelpProcessor.getReviews(key);
+
+                    Log.d("Reviews", reviewArrayList.toString());
+
+                    r.setReviews(reviewArrayList);
+                    sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
+                    r.setSentiment(sentiment);
+
+//                    strBuilder.append(m.getValue().get("biz") + " "
+//                            + sentiment.getJSONObject("docSentiment").getString("score") + " "
+//                            + sentiment.getJSONObject("docSentiment").getString("type") + " "
+//                            + sentiment.getJSONObject("docSentiment").getString("mixed") + "\n");
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -147,45 +159,42 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
-            return restaurants;
+            return restaurantArrayList;
 
             //return strBuilder.toString();
             // return reviews;
         }
 
         @Override
-        protected void onPostExecute(Map<String, JSONObject> response) {
-            super.onPostExecute(response);
+        protected void onPostExecute(ArrayList<Restaurant> restaurantArrayList) {
+            super.onPostExecute(restaurantArrayList);
 
 
             // return JSON String
             //return jObj;
 
+            MainActivity.restaurantArrayList = restaurantArrayList;
 
             TextView txt = (TextView) findViewById(R.id.textView);
             txt.clearComposingText();
             StringBuilder strBuilder = new StringBuilder();
 
 
-            for (Map.Entry<String, JSONObject> m : response.entrySet()) {
+            for (Restaurant m : restaurantArrayList) {
 
-                String key = m.getKey();
-                JSONObject reviews;
-                JSONObject sentiment;
-                try {
+                String key = m.getBiz_key();
+               // JSONObject reviews;
+               // JSONObject sentiment;
 
-                    sentiment = m.getValue().getJSONObject("sentiment");
-                    strBuilder.append(m.getValue().get("biz") + " "
-                            + sentiment.getJSONObject("docSentiment").getString("score") + " "
-                            + sentiment.getJSONObject("docSentiment").getString("type") + " "
-                            + sentiment.getJSONObject("docSentiment").getString("mixed") + "\n");
+                ArrayList<Review> reviews;
+                Sentiment sentiment;
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.d("Error", "Error: JSONException  retrieving restaurants from Yelp " + e.getMessage());
-                    //   break;
+                    sentiment = m.getSentiment();
+                    strBuilder.append(m.getBiz() + " "
+                            + sentiment.getScore() + " "
+                            + sentiment.getSentiment() + " "
+                            + sentiment.getMixed() + "\n");
 
-                }
             }
             txt.setText(strBuilder.toString());
 

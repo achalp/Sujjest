@@ -2,6 +2,9 @@ package com.tota.tota;
 
 import android.util.Log;
 
+import com.tota.tota.Entity.Restaurant;
+import com.tota.tota.Entity.Review;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,6 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,19 +23,112 @@ import java.util.Map;
  */
 public class YelpProcessor {
 
-    public final static String YELP_LIST_OF_RESTAURANTS_END_POINT = "http://www.yelp.com/search?find_desc=Restaurants&cflt=indpak&find_loc=Bellevue,+WA&start=0&sortby=review_count";//&sortby=rating";
+
+    public final static String YELP_LIST_OF_RESTAURANTS_END_POINT = "http://www.yelp.com/search";
+            //?find_desc=Restaurants
+            // &cflt=indpak
+            // &find_loc=Issaquah,+WA
+            // &start=0
+            // &sortby=review_count"
+            // ;//&sortby=rating";
+
+    private static final String ID="YELPPROCESSOR";
+
     public final static String YELP_BIZ_BASE_URL = "http://yelp.com/biz/";
 
-    public Map<String, JSONObject> getRestaurantsForCityState() throws JSONException, IOException
+    private final static String CITY="Bellevue";
+    private final static String STATE="WA" ;
+    private final static String SORTBY="review_count";
+    private final static String CUISINE = "indpak";
+    private final static String DESC = "Restaurants";
+
+    private String city;
+    private String state;
+    private String sortBy;
+    private String cuisine;
+    private String desc;
+
+    private String formURL()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(YELP_LIST_OF_RESTAURANTS_END_POINT)
+                .append("?find_desc=")
+                .append(desc)
+                .append("&cflt=")
+                .append(cuisine)
+                .append("&find_loc=")
+                .append(city)
+                .append(",")
+                .append(state)
+                .append("&sortby=")
+                .append(sortBy);
+
+        return sb.toString();
+
+    }
+
+    public YelpProcessor() {
+        city=CITY;
+        state=STATE;
+        sortBy=SORTBY;
+        cuisine=CUISINE;
+        desc=DESC;
+        Log.d(this.ID,"YELP SEARCH URL: "+ this.formURL());
+
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getSortBy() {
+        return sortBy;
+    }
+
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+
+    public String getCuisine() {
+        return cuisine;
+    }
+
+    public void setCuisine(String cusine) {
+        this.cuisine = cuisine;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public ArrayList<Restaurant> getRestaurantsForCityState() throws  IOException
 
     {
 
-        Map<String, JSONObject> restaurants = new HashMap<String, JSONObject>();
+        //Map<String, JSONObject> restaurants = new HashMap<String, JSONObject>();
+
+        ArrayList<Restaurant> restaurantArrayList = new ArrayList<Restaurant>();
 
         //Get the list of top 10 restaurants
 
         try {
-            Document doc = Jsoup.connect(YELP_LIST_OF_RESTAURANTS_END_POINT).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36").get();
+            Document doc = Jsoup.connect(this.formURL()).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36").get();
             int minCount = 0;
             int len;
 
@@ -65,35 +162,27 @@ public class YelpProcessor {
 
             Log.d("RestaurantsForCityState", "address" + address.text());
 
-            JSONObject j = new JSONObject();
+            Restaurant r = new Restaurant();
             //int i = 0;
             for (int i = 0; i < minCount; i++) {
-                try {
-                    Element e = biz.get(i);
-                    String href = e.parents().first().attr("href");
-                    String biz_key = href.substring(href.lastIndexOf('/') + 1, href.length());
-                    j.put("biz", e.text());
-                    j.put("address", address.get(i).text());
-                    j.put("href", href);
-                    j.put("biz-key", biz_key);
-                    j.put("phone", phone.get(i).text());
-                    //   j.put("cost", cost.get(i).text());
-                    j.put("numReviews", numReviews.get(i).text());
-                    j.put("image", image.get(i).attr("src"));
-                    //i++;
+                Element e = biz.get(i);
+                String href = e.parents().first().attr("href");
+                String biz_key = href.substring(href.lastIndexOf('/') + 1, href.length());
 
-                    restaurants.put(biz_key, j);
+                r.setBiz(e.text());
+                r.setAddress(address.get(i).text());
+                r.setHref(href);
+                r.setBiz_key(biz_key);
+                r.setPhone(phone.get(i).text());
+                r.setNumReviews(numReviews.get(i).text());
+                r.setImage(image.get(i).attr("src"));
 
-                    //j=null;
-                    j = new JSONObject();
+                restaurantArrayList.add(r);
 
-                } catch (JSONException ex) {
-                    Log.e("RestaurantsForCityState", ex.getMessage());
-                    throw ex;
-                }
+                r = new Restaurant();
 
             }
-            return restaurants;
+            return restaurantArrayList;
 
         } catch (IOException e) {
             Log.d("RestaurantsForCityState", "Exception:" + e.toString());
@@ -103,7 +192,7 @@ public class YelpProcessor {
     }
 
 
-    public JSONObject getReviews(String key) throws JSONException, IOException
+    public ArrayList<Review> getReviews(String key) throws JSONException, IOException
 
     {
 
@@ -127,38 +216,34 @@ public class YelpProcessor {
 
             Log.d("Reviews", "MinCount " + Integer.toString(minCount));
             Log.d("Reviews", "Key: " + key);
-            Log.d("Reviews", "review: " + reviews.first().text());
+            Log.d("Reviews", "first review: " + reviews.first().text());
 
-            Log.d("Reviews", "rating: " + ratings.first().attr("content"));
+            Log.d("Reviews", "first rating: " + ratings.first().attr("content"));
 
             JSONObject reviewsForRestaurant = new JSONObject();
             JSONObject j = new JSONObject();
             JSONArray ja = new JSONArray();
+
+            Review r = new Review();
+            ArrayList<Review> reviewArrayList = new ArrayList<Review>();
+
+
             //int i = 0;
             for (int i = 0; i < minCount; i++) {
-                try {
+
                     Element e = reviews.get(i);
 
                     //j.put("biz-key", key);
-                    j.put("review", reviews.get(i).text());
-                    j.put("rating", ratings.attr("content"));
+                    r.setReview(reviews.get(i).text());
+                    r.setRating(ratings.attr("content"));
 
-                    ja.put(j);
-                    //restaurantReviews.put(key+"#"+Integer.toString(i),j);
+                    reviewArrayList.add(r);
 
-                    //j=null;
-                    j = new JSONObject();
-
-                } catch (JSONException ex) {
-                    Log.e("Reviews", ex.getMessage());
-                    throw ex;
-                }
+                    r = new Review();
 
             }
-            reviewsForRestaurant.put("biz-key", key);
-            reviewsForRestaurant.put("reviews", ja);
 
-            return reviewsForRestaurant;
+            return reviewArrayList;
 
         } catch (IOException e) {
             Log.d("Reviews", "Exception:" + e.toString());
