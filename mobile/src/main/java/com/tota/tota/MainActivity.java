@@ -1,5 +1,6 @@
 package com.tota.tota;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -10,8 +11,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageSwitcher;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.squareup.picasso.Picasso;
 import com.tota.tota.Entity.Restaurant;
 import com.tota.tota.Entity.Review;
 import com.tota.tota.Entity.Sentiment;
@@ -22,7 +31,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -33,7 +46,12 @@ public class MainActivity extends AppCompatActivity {
     public final static String KIMONO_REVIEWS_API_END_POINT = "https://www.kimonolabs.com/api/ondemand/7kv6gyv0?kimpath2=";
     //"http://www.kimonolabs.com/api/ondemand/3bjrhisw?find_loc=Bellevue%2CWA";
 
-    public static ArrayList<Restaurant> restaurantArrayList=null;
+    public static ArrayList<Restaurant> restaurantArrayList = null;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+               // Uri u = Uri.fromParts("http","//"+image,"");
+
+
                 new RequestTask()
                         .execute();
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -54,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -78,8 +102,48 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
 
-    private class RequestTask extends AsyncTask<String, String, ArrayList<Restaurant>> {
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.tota.tota/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.tota.tota/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
+
+
+    private class RequestTask extends AsyncTask<String, Restaurant, ArrayList<Restaurant>> {
         // make a request to the specified url
 
         YelpProcessor yelpProcessor = new YelpProcessor();
@@ -87,26 +151,13 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Restaurant> doInBackground(String... uri) {
-            HttpURLConnection urlConnection;
-
-            URL url;
-            String response = null;
-
-            String inputStr = null;
-            String alchemyInputStr = null;
-            //s  String reviews = null;
-            StringBuilder responseStrBuilder;
-            responseStrBuilder = new StringBuilder();
-            StringBuilder strBuilder;
-            JSONObject jObj = null;
-
             //Get list of restaurants from Yelp.
-            Map<String, JSONObject> restaurants = null;
             ArrayList<Restaurant> restaurantArrayList = null;
             try {
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState();
+                MainActivity.restaurantArrayList = restaurantArrayList;
 
-            }  catch (IOException e) {
+            } catch (IOException e) {
                 Log.e("Error", e.toString());
                 //return "Error: IOExeption retrieving restaurants from Yelp";
             }
@@ -119,18 +170,14 @@ public class MainActivity extends AppCompatActivity {
             // populate the Map reviews.
             // key = restaurant key from provider#review number so for eg. restaurant-of-pallino-2#1
 
-            strBuilder = new StringBuilder();
-          //  for (Map.Entry<String, JSONObject> m : restaurants.entrySet())
-            for( Restaurant r: restaurantArrayList)
-            {
+            StringBuilder strBuilder = new StringBuilder();
+            //  for (Map.Entry<String, JSONObject> m : restaurants.entrySet())
+            for (Restaurant r : restaurantArrayList) {
 
                 String key = r.getBiz_key();
                 ArrayList<Review> reviewArrayList;
                 Sentiment sentiment;
-
-                JSONObject reviews;
-
-                //JSONObject sentiment;
+                publishProgress(r);
                 try {
 
                     reviewArrayList = yelpProcessor.getReviews(key);
@@ -141,19 +188,12 @@ public class MainActivity extends AppCompatActivity {
                     sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
                     r.setSentiment(sentiment);
 
-//                    strBuilder.append(m.getValue().get("biz") + " "
-//                            + sentiment.getJSONObject("docSentiment").getString("score") + " "
-//                            + sentiment.getJSONObject("docSentiment").getString("type") + " "
-//                            + sentiment.getJSONObject("docSentiment").getString("mixed") + "\n");
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.d("Error", "Error: JSONException  retrieving restaurants from Yelp " + e.getMessage());
-                    //   break;
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.d("Error", "Error: IOException  retrieving restaurants from Yelp " + e.getMessage());
-                    //break;
                 }
 
 
@@ -161,8 +201,48 @@ public class MainActivity extends AppCompatActivity {
 
             return restaurantArrayList;
 
-            //return strBuilder.toString();
-            // return reviews;
+        }
+
+        @Override
+        protected void onProgressUpdate(Restaurant... values) {
+            super.onProgressUpdate(values);
+            Log.d("Progress",values.toString());
+
+            TextView txt = (TextView) findViewById(R.id.textView);
+
+            ImageView imageView =(ImageView) findViewById(R.id.imageView);
+            ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+            Integer curProgress = pb.getProgress();
+            int steps = pb.getMax()/MainActivity.restaurantArrayList.size();
+            pb.setProgress(curProgress+steps);
+
+            String image = values[0].getImage();
+            image = image.substring(2,image.length());
+
+            Uri u = Uri.parse("http:" + "//" + URLDecoder.decode(image));
+
+            Picasso.with(getApplicationContext()).load(u).into(imageView);
+
+            txt.clearComposingText();
+
+            StringBuilder strBuilder = new StringBuilder();
+
+            Restaurant m = values[0];
+
+
+                String key = m.getBiz_key();
+                // JSONObject reviews;
+                // JSONObject sentiment;
+
+                ArrayList<Review> reviews;
+                Sentiment sentiment;
+
+                sentiment = m.getSentiment();
+                strBuilder.append(m.getBiz() + "\n");
+
+
+            txt.setText(strBuilder.toString());
+
         }
 
         @Override
@@ -172,30 +252,52 @@ public class MainActivity extends AppCompatActivity {
 
             // return JSON String
             //return jObj;
-
-            MainActivity.restaurantArrayList = restaurantArrayList;
-
-            TextView txt = (TextView) findViewById(R.id.textView);
-            txt.clearComposingText();
-            StringBuilder strBuilder = new StringBuilder();
-
+            int mMixedInt;
+            String mType;
+            Double mScore=0.0;
 
             for (Restaurant m : restaurantArrayList) {
 
                 String key = m.getBiz_key();
-               // JSONObject reviews;
-               // JSONObject sentiment;
-
-                ArrayList<Review> reviews;
+                // JSONObject reviews;
+                // JSONObject sentiment;
                 Sentiment sentiment;
+                int mixedInt;
+                String type;
+                Double score;
+                StringBuilder strBuilder = new StringBuilder();
+                sentiment = m.getSentiment();
 
-                    sentiment = m.getSentiment();
-                    strBuilder.append(m.getBiz() + " "
-                            + sentiment.getScore() + " "
-                            + sentiment.getSentiment() + " "
-                            + sentiment.getMixed() + "\n");
+                    mixedInt=Integer.parseInt(sentiment.getMixed());
+                    score = Double.parseDouble(sentiment.getScore());
+                    type = sentiment.getSentiment();
+
+
+
+                strBuilder.append(m.getBiz() + " "
+                        + sentiment.getScore() + " "
+                        + sentiment.getSentiment() + " "
+                        + sentiment.getMixed() + "\n");
+                Log.d("Sentiments", strBuilder.toString());
 
             }
+
+//            MainActivity.restaurantArrayList = restaurantArrayList;
+
+            TextView txt = (TextView) findViewById(R.id.textView);
+            ImageView imageView =(ImageView) findViewById(R.id.imageView);
+            String image = restaurantArrayList.get(0).getImage();
+            image = image.substring(2,image.length());
+
+            Uri u = Uri.parse("http:" + "//" + URLDecoder.decode(image));
+
+            Picasso.with(getApplicationContext()).load(u).into(imageView);
+
+            txt.clearComposingText();
+            StringBuilder strBuilder = new StringBuilder();
+
+
+
             txt.setText(strBuilder.toString());
 
 

@@ -39,7 +39,7 @@ public class YelpProcessor {
     private final static String CITY="Bellevue";
     private final static String STATE="WA" ;
     private final static String SORTBY="review_count";
-    private final static String CUISINE = "indpak";
+    private final static String CUISINE = "Italian";
     private final static String DESC = "Restaurants";
 
     private String city;
@@ -176,6 +176,7 @@ public class YelpProcessor {
                 r.setPhone(phone.get(i).text());
                 r.setNumReviews(numReviews.get(i).text());
                 r.setImage(image.get(i).attr("src"));
+
 
                 restaurantArrayList.add(r);
 
