@@ -117,7 +117,7 @@ public class YelpProcessor {
         this.desc = desc;
     }
 
-    public ArrayList<Restaurant> getRestaurantsForCityState() throws  IOException
+    public ArrayList<Restaurant> getRestaurantsForCityState(int start) throws  IOException
 
     {
 
@@ -128,7 +128,7 @@ public class YelpProcessor {
         //Get the list of top 10 restaurants
 
         try {
-            Document doc = Jsoup.connect(this.formURL()).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36").get();
+            Document doc = Jsoup.connect(this.formURL()+"&start="+Integer.toString(start)).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36").get();
             int minCount = 0;
             int len;
 
@@ -173,6 +173,7 @@ public class YelpProcessor {
                 r.setAddress(address.get(i).text());
                 r.setHref(href);
                 r.setBiz_key(biz_key);
+                r.setCost(cost.get(i).text());
                 r.setPhone(phone.get(i).text());
                 r.setNumReviews(numReviews.get(i).text());
                 r.setImage(image.get(i).attr("src"));

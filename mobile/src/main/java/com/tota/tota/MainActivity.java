@@ -57,8 +57,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -153,8 +151,11 @@ public class MainActivity extends AppCompatActivity {
         protected ArrayList<Restaurant> doInBackground(String... uri) {
             //Get list of restaurants from Yelp.
             ArrayList<Restaurant> restaurantArrayList = null;
+            ArrayList<Restaurant> restaurantArrayList2 = null;
             try {
-                restaurantArrayList = yelpProcessor.getRestaurantsForCityState();
+                restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
+                restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+                restaurantArrayList.addAll(restaurantArrayList2);
                 MainActivity.restaurantArrayList = restaurantArrayList;
 
             } catch (IOException e) {
@@ -209,6 +210,9 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Progress",values.toString());
 
             TextView txt = (TextView) findViewById(R.id.textView);
+            TextView txt1 = (TextView) findViewById(R.id.textView1);
+            TextView txt2 = (TextView) findViewById(R.id.textView2);
+
 
             ImageView imageView =(ImageView) findViewById(R.id.imageView);
             ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
@@ -238,10 +242,13 @@ public class MainActivity extends AppCompatActivity {
                 Sentiment sentiment;
 
                 sentiment = m.getSentiment();
-                strBuilder.append(m.getBiz() + "\n");
+            strBuilder.append(m.getBiz() + "\n");
 
 
             txt.setText(strBuilder.toString());
+            txt1.setText(m.getNumReviews());
+            txt2.setText(m.getCost());
+
 
         }
 
