@@ -1,5 +1,7 @@
 package com.tota.tota;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -57,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MainActivityFragment ma = new MainActivityFragment();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.add(R.id.container,ma,"main");
+        ft.commit();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -154,8 +160,9 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<Restaurant> restaurantArrayList2 = null;
             try {
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
-                restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
-                restaurantArrayList.addAll(restaurantArrayList2);
+                //next page
+              //  restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+                //restaurantArrayList.addAll(restaurantArrayList2);
                 MainActivity.restaurantArrayList = restaurantArrayList;
 
             } catch (IOException e) {
@@ -261,24 +268,28 @@ public class MainActivity extends AppCompatActivity {
             //return jObj;
             int mMixedInt;
             String mType;
-            Double mScore=0.0;
-
+            Double mScore = 0.0;
+            String maxKey=null;
+            Double maxSCore = 0.0;
             for (Restaurant m : restaurantArrayList) {
 
                 String key = m.getBiz_key();
-                // JSONObject reviews;
-                // JSONObject sentiment;
                 Sentiment sentiment;
                 int mixedInt;
                 String type;
                 Double score;
+
                 StringBuilder strBuilder = new StringBuilder();
                 sentiment = m.getSentiment();
 
-                    mixedInt=Integer.parseInt(sentiment.getMixed());
-                    score = Double.parseDouble(sentiment.getScore());
-                    type = sentiment.getSentiment();
+                mixedInt = Integer.parseInt(sentiment.getMixed());
+                score = Double.parseDouble(sentiment.getScore());
+                type = sentiment.getSentiment();
 
+                if (score > maxSCore) {
+                    maxSCore = score;
+                    maxKey = key;
+                }
 
 
                 strBuilder.append(m.getBiz() + " "
@@ -289,23 +300,17 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
-//            MainActivity.restaurantArrayList = restaurantArrayList;
 
-            TextView txt = (TextView) findViewById(R.id.textView);
-            ImageView imageView =(ImageView) findViewById(R.id.imageView);
-            String image = restaurantArrayList.get(0).getImage();
-            image = image.substring(2,image.length());
+            Log.d("Sentiment","Max Score and Key " + maxKey +" " + maxSCore);
 
-            Uri u = Uri.parse("http:" + "//" + URLDecoder.decode(image));
-
-            Picasso.with(getApplicationContext()).load(u).into(imageView);
-
-            txt.clearComposingText();
-            StringBuilder strBuilder = new StringBuilder();
-
-
-
-            txt.setText(strBuilder.toString());
+            RecommendedFragment recommendedFragment = new RecommendedFragment();
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.container, recommendedFragment);
+//            ft.add(R.id.fragment,recommendedFragment);
+          //  ft.hide(MainActivityFragment);
+    //        ft.hide(getFragmentManager().)
+            ft.addToBackStack("Recommendation");
+            ft.commit();
 
 
         }

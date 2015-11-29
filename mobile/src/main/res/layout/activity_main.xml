@@ -8,8 +8,12 @@
     tools:context="com.tota.tota.MainActivity">
 
 
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-    <include layout="@layout/content_main" />
+  <!-- <include layout="@layout/content_main" /> -->
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
