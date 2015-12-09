@@ -1,4 +1,4 @@
-package com.tota.tota.Entity;
+package com.tota.sujjest.Entity;
 
 /**
  * Created by aprabhakar on 11/24/15.

@@ -1,11 +1,15 @@
-package com.tota.tota.Entity;
+package com.tota.sujjest.Entity;
 
+import android.location.Address;
+
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * Created by aprabhakar on 11/24/15.
  */
-public class Restaurant {
+public class Restaurant implements Serializable {
 
     public Restaurant() {
         //nothing
@@ -86,6 +90,16 @@ public class Restaurant {
     private String numReviews;
     private String image;
 
+    public Address getGoogleAddress() {
+        return googleAddress;
+    }
+
+    public void setGoogleAddress(Address googleAddress) {
+        this.googleAddress = googleAddress;
+    }
+
+    private Address googleAddress;
+
     public ArrayList<Review> getReviews() {
 
         return reviews;
@@ -106,7 +120,28 @@ public class Restaurant {
     private ArrayList<Review> reviews;
     private Sentiment sentiment;
 
+    public static Comparator<Restaurant> RestScoreComparator = new Comparator<Restaurant>() {
+        @Override
+        public int compare(Restaurant restaurant, Restaurant t1) {
+            Sentiment s1, s2;
+            Double d1, d2;
+            if (t1 != null && restaurant != null) {
+                s1 = restaurant.getSentiment();
+                s2 = t1.getSentiment();
+                if(s1 !=null && s2 !=null) {
+                    d1 = Double.parseDouble(s1.getScore());
+                    d2 = Double.parseDouble(s2.getScore());
 
+                    if (d1 > d2) return 1;
+                    if (d1 < d2) return -1;
+                    else return 0;
+
+                }
+
+            }
+            return 0;
+        }
+    };
 
 
 

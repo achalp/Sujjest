@@ -1,4 +1,4 @@
-package com.tota.tota;
+package com.tota.sujjest;
 
 import org.junit.Test;
 

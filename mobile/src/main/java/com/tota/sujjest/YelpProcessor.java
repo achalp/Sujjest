@@ -1,9 +1,9 @@
-package com.tota.tota;
+package com.tota.sujjest;
 
 import android.util.Log;
 
-import com.tota.tota.Entity.Restaurant;
-import com.tota.tota.Entity.Review;
+import com.tota.sujjest.Entity.Restaurant;
+import com.tota.sujjest.Entity.Review;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,8 +15,6 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by aprabhakar on 11/23/15.
@@ -39,7 +37,7 @@ public class YelpProcessor {
     private final static String CITY="Bellevue";
     private final static String STATE="WA" ;
     private final static String SORTBY="review_count";
-    private final static String CUISINE = "Italian";
+    private final static String CUISINE = "Indpak";
     private final static String DESC = "Restaurants";
 
     private String city;
@@ -132,27 +130,27 @@ public class YelpProcessor {
             int minCount = 0;
             int len;
 
-            Elements address = doc.select("li > div > div > div > address");
+            Elements address = doc.select("li.regular-search-result > div > div > div > address");
             minCount = address.toArray().length;
 
-            Elements biz = doc.select("div > h3 > span > a > span");
+            Elements biz = doc.select("div > h3 > span.indexed-biz-name > a > span");
             len = biz.toArray().length;
             if (minCount > len) minCount = len;
 
-            Elements phone = doc.select("li > div > div > div > span.biz-phone");
+            Elements phone = doc.select("li.regular-search-result > div > div > div > span.biz-phone");
             len = phone.toArray().length;
             if (minCount > len) minCount = len;
 
-            Elements cost = doc.select("div > div > div > div > span > span");
+            Elements cost = doc.select("li.regular-search-result > div > div  > div > div > div > div > span > span.business-attribute.price-range");
             Log.d("RestaurantsForCityState", "Cost=" + cost.toString());
             len = cost.toArray().length;
             if (minCount > len) minCount = len;
 
-            Elements numReviews = doc.select("div > div > div > div > span.review-count.rating-qualifier");
+            Elements numReviews = doc.select("li > div.natural-search-result > div > div > div >div > div > span.review-count.rating-qualifier");
             len = numReviews.toArray().length;
             if (minCount > len) minCount = len;
 
-            Elements image = doc.select("div > div > div.photo-box.pb-90s > a > img.photo-box-img");
+            Elements image = doc.select("li > div.natural-search-result > div >             div > div > div > div.photo-box.pb-90s > a > img.photo-box-img");
             len = image.toArray().length;
             if (minCount > len) minCount = len;
 
@@ -176,7 +174,9 @@ public class YelpProcessor {
                 r.setCost(cost.get(i).text());
                 r.setPhone(phone.get(i).text());
                 r.setNumReviews(numReviews.get(i).text());
-                r.setImage(image.get(i).attr("src"));
+                String imgSrc = image.get(i).attr("src");
+               imgSrc = imgSrc.replaceFirst("90s","258s");
+                r.setImage(imgSrc);
 
 
                 restaurantArrayList.add(r);

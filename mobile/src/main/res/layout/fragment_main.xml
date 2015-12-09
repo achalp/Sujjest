@@ -1,49 +1,39 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    >
+    android:paddingTop="@dimen/activity_vertical_margin">
 
-    <FrameLayout
-        android:id="@+id/frmImg"
-        android:layout_width="280dp"
-        android:layout_height="280dp"
-        android:layout_marginLeft="20dp"
-    android:layout_marginRight="16dp"
-    android:layout_centerVertical="false">
     <ImageView
-        android:layout_width="275dp"
-        android:layout_height="275dp"
-        android:background="#000"/>
-    <ImageView
-        android:layout_width="270dp"
-        android:layout_height="270dp"
-        android:layout_margin="1dp"
+        android:layout_width="258dp"
+        android:layout_height="258dp"
         android:id="@+id/imageView"
-        android:background="#FFF"/>
-    </FrameLayout>
+        android:background="#000"
+        android:padding="2dp"
+        android:layout_centerHorizontal="true"/>
+
 
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="PlaceHolder"
+            android:text=""
+            android:textColor="#FFF"
             android:id="@+id/textView"
             android:layout_gravity="center"
-            android:layout_below="@+id/frmImg"
+            android:layout_below="@+id/imageView"
             android:layout_marginTop="10dp"
             android:layout_alignParentLeft="true"
             />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="PlaceHolder"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="#FFF"
         android:id="@+id/textView1"
         android:layout_gravity="center"
         android:layout_below="@+id/textView"
@@ -53,8 +43,9 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="PlaceHolder"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="#FFF"
         android:id="@+id/textView2"
         android:gravity="right"
         android:layout_below="@+id/textView"

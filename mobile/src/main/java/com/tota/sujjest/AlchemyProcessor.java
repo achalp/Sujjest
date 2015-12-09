@@ -1,11 +1,10 @@
-package com.tota.tota;
+package com.tota.sujjest;
 
 import android.util.Log;
 
-import com.tota.tota.Entity.Review;
-import com.tota.tota.Entity.Sentiment;
+import com.tota.sujjest.Entity.Review;
+import com.tota.sujjest.Entity.Sentiment;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
