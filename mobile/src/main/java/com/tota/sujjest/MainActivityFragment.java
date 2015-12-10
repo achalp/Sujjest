@@ -36,6 +36,7 @@ public class MainActivityFragment extends Fragment {
     private View view;
     private Bundle savedInstance;
     private RequestTask requestTask;
+    private String what, where;
 
     public ArrayList<Restaurant> getRestaurantArrayList() {
         return restaurantArrayList;
@@ -50,8 +51,18 @@ public class MainActivityFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle b = getArguments();
+        what = (String) b.get("what");
+        where = (String) b.get("where");
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         this.vg = container;
         this.view = inflater.inflate(R.layout.fragment_main, container, false);
         this.savedInstance = savedInstanceState;
@@ -84,6 +95,7 @@ public class MainActivityFragment extends Fragment {
         // make a request to the specified url
 
         YelpProcessor yelpProcessor = new YelpProcessor();
+
         AlchemyProcessor alchemyProcessor = new AlchemyProcessor();
 
         @Override
@@ -91,6 +103,9 @@ public class MainActivityFragment extends Fragment {
             //Get list of restaurants from Yelp.
 
             try {
+                yelpProcessor.setCity(where);
+                yelpProcessor.setDesc(what);
+
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
                 //next page
                 restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);

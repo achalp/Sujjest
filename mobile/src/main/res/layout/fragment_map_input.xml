@@ -14,12 +14,36 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+       >
+        <View android:id="@+id/dummy"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_centerInParent="true"/>
         <AutoCompleteTextView
+            android:layout_alignRight="@id/dummy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New AutoCompleteTextView"
+            android:text="What"
+            android:hint="Find:"
+            android:lines="1"
             android:textColor="#FFF"
-            android:id="@+id/autoCompleteTextView" />
+            android:id="@+id/findWhatTextView"
+            android:layout_alignParentLeft="true"/>
+        <AutoCompleteTextView
+            android:layout_alignLeft="@id/dummy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Where"
+            android:lines="1"
+            android:hint="Where:"
+            android:textColor="#FFF"
+            android:id="@+id/findWhereTextView"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/findWhatTextView"/>
+        </RelativeLayout>
 
         <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:name="com.google.android.gms.maps.MapFragment"

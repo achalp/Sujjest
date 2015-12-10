@@ -47,6 +47,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +58,7 @@ import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
  * A placeholder fragment containing a simple view.
  */
 public class MapInputActivity extends Fragment
-        implements OnMapReadyCallback, LocationListener {
+        implements OnMapReadyCallback, LocationListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     protected ArrayList<Restaurant> restaurantArrayList = null;
     protected ArrayList<Restaurant> restaurantArrayList2 = null;
@@ -94,13 +95,30 @@ public class MapInputActivity extends Fragment
         mapFragment.getMapAsync(this);
 
 
+        initLocation();
+
+
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 999 && grantResults.length > 0)
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                initLocation();;
+
+    }
+
+    protected void initLocation()
+    {
         // Get the location manager
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         // Define the criteria how to select the locatioin provider -> use
         // default
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -111,50 +129,25 @@ public class MapInputActivity extends Fragment
             String[] a = new String[2];
             a[0]=Manifest.permission.ACCESS_FINE_LOCATION;
             a[1]=Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(),a,0);
+            ActivityCompat.requestPermissions(getActivity(),a,999);
             return;
         }
         Location location = locationManager.getLastKnownLocation(provider);
 
-            // Initialize the location fields
-            if (location != null) {
-                System.out.println("Provider " + provider + " has been selected.");
-                onLocationChanged(location);
-            } else {
-                latitude = 0.0;
-                longitude = 0.0;
-            }
+        // Initialize the location fields
+        if (location != null) {
+            System.out.println("Provider " + provider + " has been selected.");
+            onLocationChanged(location);
+            latitude= (location.getLatitude());
+            longitude = (location.getLongitude());
+        } else {
+            latitude = 0.0;
+            longitude = 0.0;
+        }
 
 
-            Log.d("latitude", latitude.toString());
-            Log.d("longtitude", longitude.toString());
-
-
-    }
-
-
-    /* Request updates at startup */
-    @Override
-    public void onResume() {
-        super.onResume();
-        /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }*/
-        locationManager.requestLocationUpdates(provider, 400, 1, this);
-    }
-
-    /* Remove the locationlistener updates when Activity is paused */
-    @Override
-    public void onPause() {
-        super.onPause();
-        locationManager.removeUpdates(this);
+        Log.d("latitude", latitude.toString());
+        Log.d("longtitude", longitude.toString());
     }
 
     @Override
@@ -163,6 +156,44 @@ public class MapInputActivity extends Fragment
         longitude = (location.getLongitude());
 
     }
+
+    /* Request updates at startup */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(provider, 400, 1, this);
+    }
+
+    /* Remove the locationlistener updates when Activity is paused */
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(this);
+    }
+
+
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -192,12 +223,13 @@ public class MapInputActivity extends Fragment
         View map_input = inflater.inflate(R.layout.fragment_map_input, container,false);
 
 
-        AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView) map_input.findViewById(R.id.autoCompleteTextView);
+        AutoCompleteTextView findWhereTextView = (AutoCompleteTextView) map_input.findViewById(R.id.findWhereTextView);
+        AutoCompleteTextView findWhatTextView = (AutoCompleteTextView) map_input.findViewById(R.id.findWhatTextView);
         FrameLayout frameLayout = (FrameLayout) map_input.findViewById(R.id.map);
 
 
 
-        autoCompleteTextView.setOnClickListener(new View.OnClickListener() {
+        findWhereTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Uri u = Uri.fromParts("http","//"+image,"");
@@ -217,6 +249,7 @@ public class MapInputActivity extends Fragment
     public void onMapReady(GoogleMap googleMap) {
 
         gm = googleMap;
+        initLocation();
         gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 10));
 
 
@@ -287,6 +320,10 @@ public class MapInputActivity extends Fragment
 
                // MapFragment m = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
                // GoogleMap gm = m.getMap();
+            if(gm!=null &&
+                    values.length>0 &&
+                    values[0]!=null &&
+                    values[0].getGoogleAddress() !=null )
             gm.addMarker(new MarkerOptions()
                             .position(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()))
                             .title(values[0].getBiz())
@@ -300,6 +337,10 @@ public class MapInputActivity extends Fragment
             super.onPostExecute(restaurantArrayList);
 
 
+            if(gm!=null &&
+                    restaurantArrayList.size() > 0 &&
+                    restaurantArrayList.get(0)!=null &&
+                    restaurantArrayList.get(0).getGoogleAddress() !=null )
             gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getGoogleAddress().getLatitude(), restaurantArrayList.get(0).getGoogleAddress().getLongitude()), 10));
 
 

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity
             MapInputActivity mapInputActivity = new MapInputActivity();
 
             FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.add(R.id.container, mapInputActivity, "main");
+            ft.add(R.id.container, mapInputActivity, "MapInput");
             ft.addToBackStack("MapInput");
             //  ft.add(R.id.map,mapFragment,"map");
             ft.commit();
@@ -54,10 +55,21 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onClick(View view) {
 
+                    AutoCompleteTextView t1 = (AutoCompleteTextView) findViewById(R.id.findWhatTextView);
+                    Log.d("$$$$$$",t1.getText().toString());
+                    AutoCompleteTextView t2 = (AutoCompleteTextView) findViewById(R.id.findWhereTextView);
+                    Log.d("$$$$$$", t2.getText().toString());
+
                     MainActivityFragment ma = new MainActivityFragment();
+
+                    Bundle b = new Bundle();
+                    b.putSerializable("what",t1.getText().toString());
+                    b.putSerializable("where",t2.getText().toString());
+                    ma.setArguments(b);
+
                     FragmentTransaction ft = getFragmentManager().beginTransaction();
                     ft.replace(R.id.container, ma, "main");
-                    ft.addToBackStack(null);
+                    ft.addToBackStack("main");
                     ft.commit();
 
                     Snackbar.make(view, "Searching...", Snackbar.LENGTH_LONG)

@@ -37,8 +37,8 @@ public class YelpProcessor {
     private final static String CITY="Bellevue";
     private final static String STATE="WA" ;
     private final static String SORTBY="review_count";
-    private final static String CUISINE = "Indpak";
-    private final static String DESC = "Restaurants";
+    private final static String CUISINE = " ";
+    private final static String DESC = "Thai Restaurants";
 
     private String city;
     private String state;
@@ -56,8 +56,8 @@ public class YelpProcessor {
                 .append(cuisine)
                 .append("&find_loc=")
                 .append(city)
-                .append(",")
-                .append(state)
+             //   .append(",")
+               // .append(state)
                 .append("&sortby=")
                 .append(sortBy);
 
