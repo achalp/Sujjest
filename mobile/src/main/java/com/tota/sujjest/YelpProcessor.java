@@ -21,6 +21,115 @@ import java.util.ArrayList;
  */
 public class YelpProcessor {
 
+    public final static String[] categories = {
+            "Afghan" ,
+            "African" ,
+            "American (New)" ,
+            "American (Traditional)" ,
+            "Arabian" ,
+            "Argentine" ,
+            "Armenian" ,
+            "Asian Fusion" ,
+            "Australian" ,
+            "Austrian" ,
+            "Bangladeshi" ,
+            "Barbeque" ,
+            "Basque" ,
+            "Belgian" ,
+            "Brasseries" ,
+            "Brazilian" ,
+            "Breakfast & Brunch" ,
+            "British" ,
+            "Buffets" ,
+            "Burgers" ,
+            "Burmese" ,
+            "Cafes" ,
+            "Cafeteria" ,
+            "Cajun/Creole" ,
+            "Cambodian" ,
+            "Caribbean" ,
+            "Catalan" ,
+            "Cheesesteaks" ,
+            "Chicken Shop" ,
+            "Chicken Wings" ,
+            "Chinese" ,
+            "Comfort Food" ,
+            "Creperies" ,
+            "Cuban" ,
+            "Czech" ,
+            "Delis" ,
+            "Diners" ,
+            "Ethiopian" ,
+            "Fast Food" ,
+            "Filipino" ,
+            "Fish & Chips" ,
+            "Fondue" ,
+            "Food Court" ,
+            "Food Stands" ,
+            "French" ,
+            "Gastropubs" ,
+            "German" ,
+            "Gluten-Free" ,
+            "Greek" ,
+            "Halal" ,
+            "Hawaiian" ,
+            "Himalayan/Nepalese" ,
+            "Hot Dogs" ,
+            "Hot Pot" ,
+            "Hungarian" ,
+            "Iberian" ,
+            "Indian" ,
+            "Indonesian" ,
+            "Irish" ,
+            "Italian" ,
+            "Japanese" ,
+            "Korean" ,
+            "Kosher" ,
+            "Laotian" ,
+            "Latin American" ,
+            "Live/Raw Food" ,
+            "Malaysian" ,
+            "Mediterranean" ,
+            "Mexican" ,
+            "Middle Eastern" ,
+            "Modern European" ,
+            "Mongolian" ,
+            "Moroccan" ,
+            "Pakistani" ,
+            "Persian/Iranian" ,
+            "Peruvian" ,
+            "Pizza" ,
+            "Polish" ,
+            "Portuguese" ,
+            "Poutineries" ,
+            "Russian" ,
+            "Salad" ,
+            "Sandwiches" ,
+            "Scandinavian" ,
+            "Scottish" ,
+            "Seafood" ,
+            "Singaporean" ,
+            "Slovakian" ,
+            "Soul Food" ,
+            "Soup" ,
+            "Southern" ,
+            "Spanish" ,
+            "Sri Lankan" ,
+            "Steakhouses" ,
+            "Supper Clubs" ,
+            "Sushi Bars" ,
+            "Syrian" ,
+            "Taiwanese" ,
+            "Tapas Bars" ,
+            "Tapas/Small Plates" ,
+            "Tex-Mex" ,
+            "Thai" ,
+            "Turkish" ,
+            "Ukrainian" ,
+            "Uzbek" ,
+            "Vegan" ,
+            "Vegetarian" ,
+            "Vietnamese"};
 
     public final static String YELP_LIST_OF_RESTAURANTS_END_POINT = "http://www.yelp.com/search";
             //?find_desc=Restaurants
@@ -150,13 +259,13 @@ public class YelpProcessor {
             len = numReviews.toArray().length;
             if (minCount > len) minCount = len;
 
-            Elements image = doc.select("li > div.natural-search-result > div >             div > div > div > div.photo-box.pb-90s > a > img.photo-box-img");
+            Elements image = doc.select("li > div.natural-search-result > div > div > div > div > div.photo-box.pb-90s > a > img.photo-box-img");
             len = image.toArray().length;
             if (minCount > len) minCount = len;
 
             Log.d("RestaurantsForCityState", "MinCount " + Integer.toString(minCount));
-            Log.d("RestaurantsForCityState", "Biz " + biz.first().text());
-            Log.d("RestaurantsForCityState", "Biz Href" + biz.first().parents().first().attr("href"));
+            Log.d("RestaurantsForCityState", "Biz " + biz.first()==null?biz.first().text():"nothing ");
+            Log.d("RestaurantsForCityState", "Biz Href" + biz.first()==null?biz.first().parents().first().attr("href"):"nothing ");
 
             Log.d("RestaurantsForCityState", "address" + address.text());
 
@@ -218,9 +327,9 @@ public class YelpProcessor {
 
             Log.d("Reviews", "MinCount " + Integer.toString(minCount));
             Log.d("Reviews", "Key: " + key);
-            Log.d("Reviews", "first review: " + reviews.first().text());
+            //Log.d("Reviews", "first review: " + reviews.first().text());
 
-            Log.d("Reviews", "first rating: " + ratings.first().attr("content"));
+           // Log.d("Reviews", "first rating: " + ratings.first().attr("content"));
 
             JSONObject reviewsForRestaurant = new JSONObject();
             JSONObject j = new JSONObject();

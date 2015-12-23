@@ -32,6 +32,7 @@ import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
  */
 public class MainActivityFragment extends Fragment {
 
+    public static final String ID="MainActivityFragment";
     private ViewGroup vg;
     private View view;
     private Bundle savedInstance;
@@ -49,6 +50,8 @@ public class MainActivityFragment extends Fragment {
 
     public MainActivityFragment() {
     }
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,6 +77,8 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(ID, "Started");
+
         this.requestTask = new RequestTask();
 
         this.requestTask.execute();
@@ -81,8 +86,19 @@ public class MainActivityFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(ID,"Paused");
+        if(this.requestTask != null)
+        {
+            this.requestTask.cancel(true);
+        }
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
+        Log.d(ID, "Stopped");
 
         if(this.requestTask != null)
         {
@@ -94,6 +110,7 @@ public class MainActivityFragment extends Fragment {
     private class RequestTask extends AsyncTask<String, Restaurant, ArrayList<Restaurant>> {
         // make a request to the specified url
 
+        private static final String ID="MainAct Result Task";
         YelpProcessor yelpProcessor = new YelpProcessor();
 
         AlchemyProcessor alchemyProcessor = new AlchemyProcessor();
@@ -129,6 +146,8 @@ public class MainActivityFragment extends Fragment {
             //  for (Map.Entry<String, JSONObject> m : restaurants.entrySet())
             for (Restaurant r : restaurantArrayList) {
 
+                if (isCancelled()) {Log.d(ID,"cancelled so breaking");break;}
+
                 String key = r.getBiz_key();
                 ArrayList<Review> reviewArrayList;
                 Sentiment sentiment;
@@ -137,7 +156,7 @@ public class MainActivityFragment extends Fragment {
 
                     reviewArrayList = yelpProcessor.getReviews(key);
 
-                    Log.d("Reviews", reviewArrayList.toString());
+                  //  Log.d("Reviews", reviewArrayList.toString());
 
                     r.setReviews(reviewArrayList);
                     sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
@@ -221,13 +240,14 @@ public class MainActivityFragment extends Fragment {
             Restaurant r = null;
 
             Collections.sort(restaurantArrayList, Restaurant.RestScoreComparator);
-            Log.d("Last",restaurantArrayList.get(restaurantArrayList.size()-1).getSentiment().getScore());
+//            Log.d("Last",restaurantArrayList.get(restaurantArrayList.size()-1).getSentiment().getScore());
             Bundle b = new Bundle();
             //get TOP 3
             for(int i=restaurantArrayList.size()-1,j=1;i>=0;i--,j++)
             {
                 r = restaurantArrayList.get(i);
                 Sentiment sentiment =  r.getSentiment();
+
                 StringBuilder strBuilder = new StringBuilder();
                 strBuilder.append(r.getBiz() + " "
                         + sentiment.getScore() + " "
@@ -264,7 +284,7 @@ public class MainActivityFragment extends Fragment {
 
             recommendedFragment.setArguments(b);
             FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.container, recommendedFragment);
+            ft.replace(R.id.container, recommendedFragment,"Recommendation");
             //            ft.add(R.id.fragment,recommendedFragment);
             //  ft.hide(MainActivityFragment);
             //        ft.hide(getFragmentManager().)
@@ -274,6 +294,17 @@ public class MainActivityFragment extends Fragment {
 
         }
 
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            Log.d(ID,"Cancelled");
+        }
 
+        @Override
+        protected void onCancelled(ArrayList<Restaurant> restaurants) {
+            super.onCancelled(restaurants);
+            Log.d(ID, "Cancelled with Results");
+
+        }
     }
 }

@@ -57,7 +57,7 @@ public class AlchemyProcessor {
                     + "&text="
                     + URLEncoder.encode(reviewsConcatenated, "UTF-8");
 
-            Log.d("ALCHEMY_Request_Params", parameters);
+         //   Log.d("ALCHEMY_Request_Params", parameters);
 
             urlConnection.setRequestProperty("Content-Length", "" +
                     Integer.toString(parameters.getBytes().length));
