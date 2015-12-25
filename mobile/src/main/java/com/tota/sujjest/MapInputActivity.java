@@ -22,6 +22,7 @@ import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -134,7 +135,7 @@ public class MapInputActivity extends Fragment
 
     protected void refreshLocation()
     {
-        Log.d(ID,"Starting refreshLocation");
+        Log.d(ID, "Starting refreshLocation");
         initLocation();
     }
 
@@ -215,6 +216,59 @@ public class MapInputActivity extends Fragment
             latitude = 0.0;
             longitude = 0.0;
         }
+
+
+        Log.i(ID,"latitude "+ latitude.toString());
+        Log.i(ID,"longtitude " + longitude.toString());
+    }
+
+    protected void initLocationFromName(String city_state)
+    {
+        Geocoder geocoder;
+        List<Address> addressList;
+
+        // Get the location manager
+
+            geocoder = new Geocoder(getActivity());
+
+            try {
+                addressList = geocoder.getFromLocationName(city_state,1);
+          //      addressList = geocoder.getFromLocation(latitude, longitude, 1);
+                if (addressList != null) {
+                    if (addressList.size() > 0) {
+                        Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
+                        Address address = addressList.get(0);
+                        if (address!=null)
+                        {
+                             city_state = address.getLocality()+","+address.getAdminArea();
+                            where = city_state;
+                            if(address.hasLongitude())
+                            longitude = address.getLongitude();
+
+                            if(address.hasLatitude())
+                            latitude = address.getLatitude();
+
+                            Log.d(ID,"Found that we are here: " + where);
+                            if(gm != null)
+                                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+                        }
+                    }
+                    else
+                    {
+                        Log.e(ID, "GeoCoder: Unable to resolve location into a valid address. No address entries returned from Google Places");
+
+                    }
+
+                } else {
+                    Log.e(ID, "GeoCoder: Resolving location into Address using Google failed - geocoder.getLocation returned null");
+
+                }
+            }
+            catch (IOException e)
+            {
+                Log.e(ID,"Exception thrown while geoCoding current location: "+ e.toString());
+            }
+
 
 
         Log.i(ID,"latitude "+ latitude.toString());
@@ -305,7 +359,7 @@ public class MapInputActivity extends Fragment
         View map_input = inflater.inflate(R.layout.fragment_map_input, container,false);
 
 
-        AutoCompleteTextView findWhereTextView = (AutoCompleteTextView) map_input.findViewById(R.id.findWhereTextView);
+        final ClearableAutoCompleteTextView findWhereTextView = (ClearableAutoCompleteTextView) map_input.findViewById(R.id.findWhereTextView);
         final ClearableAutoCompleteTextView findWhatTextView = (ClearableAutoCompleteTextView) map_input.findViewById(R.id.findWhatTextView);
 
 
@@ -340,9 +394,8 @@ public class MapInputActivity extends Fragment
                 InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 in.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
 
-               // if a new text was entered then re-run the search for restaurants using the latest info.
-                if (what.length() > 0)
-                {
+                // if a new text was entered then re-run the search for restaurants using the latest info.
+                if (what.length() > 0) {
                     if (gm != null)
                         gm.clear();
                     requestTask = new RequestTask();
@@ -366,18 +419,65 @@ public class MapInputActivity extends Fragment
             @Override
             public void afterTextChanged(Editable s) {
 
-                if(s.length() >0 )
-                {
+                if (s.length() > 0) {
                     findWhatTextView.showClearButton();
-                }
-                else
+                } else
                     findWhatTextView.hideClearButton();
 
+
+                what = s.toString();
 
             }
         });
 
 
+        findWhereTextView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER)
+                {
+                    where = findWhereTextView.getText().toString();
+                    initLocationFromName(where);
+
+                    if(gm != null)
+                        gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+
+                    requestTask = new RequestTask();
+                    requestTask.execute();
+                    return true;
+
+                }
+                return false;
+            }
+        });
+
+
+        findWhereTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                if(s.length() >0 )
+                {
+                    findWhereTextView.showClearButton();
+                }
+                else
+                    findWhereTextView.hideClearButton();
+
+
+                where = s.toString();
+
+            }
+        });
 
 
 

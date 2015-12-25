@@ -13,7 +13,7 @@ import android.widget.AutoCompleteTextView;
 /**
  * sub class of {@link android.widget.AutoCompleteTextView} that includes a clear (dismiss / close) button with
  * a OnClearListener to handle the event of clicking the button
- * based on code from {@link http://www.gubed.net/clearableautocompletetextview}
+ * based on code from {www.gubed.net/clearableautocompletetextview}
  *
  *
  */
@@ -38,6 +38,7 @@ public class ClearableAutoCompleteTextView extends AutoCompleteTextView {
     // The image we defined for the clear button
     public Drawable imgClearButton = getResources().getDrawable(
             android.R.drawable.presence_offline);
+
 
     public interface OnClearListener {
         void onClear();

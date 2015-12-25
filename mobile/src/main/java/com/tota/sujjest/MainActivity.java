@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
+import android.widget.FrameLayout;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -81,17 +82,21 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.action_search) {
             CardView cardView = (CardView) findViewById(R.id.searchCard);
-            Fragment fragment = (Fragment) findViewById(R.id.map);
-            if(cardView.getVisibility() == View.VISIBLE)
-            {
-                //do nothing
-                cardView.setVisibility(View.INVISIBLE);
-            }
-            else
-            {
-                //show
-                cardView.setVisibility(View.VISIBLE);
-            }
+            FrameLayout fragment = (FrameLayout) findViewById(R.id.container);
+            if( cardView!= null && fragment != null )
+                if(cardView.getVisibility() == View.VISIBLE)
+                {
+                    //do nothing
+                   cardView.setVisibility(View.GONE);
+                    fragment.invalidate();
+                }
+                else
+                {
+                    //show
+                   cardView.setVisibility(View.VISIBLE);
+                    fragment.invalidate();
+
+                }
              return true;
         }
 
