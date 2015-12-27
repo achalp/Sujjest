@@ -288,8 +288,9 @@ public class MainActivityFragment extends Fragment {
             //            ft.add(R.id.fragment,recommendedFragment);
             //  ft.hide(MainActivityFragment);
             //        ft.hide(getFragmentManager().)
-            ft.addToBackStack("Recommendation");
+        //    ft.addToBackStack("Recommendation");
             ft.commit();
+            MainActivity.appState = AppStateEnum.RECOMMENDATION_SCREEN;
 
 
         }

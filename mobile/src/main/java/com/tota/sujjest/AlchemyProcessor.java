@@ -48,6 +48,8 @@ public class AlchemyProcessor {
 
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
+            urlConnection.setConnectTimeout(1000);
+            urlConnection.setReadTimeout(10000);
             urlConnection.setRequestProperty("Content-Type",
                     "application/x-www-form-urlencoded");
 

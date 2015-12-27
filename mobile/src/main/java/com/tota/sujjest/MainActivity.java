@@ -1,7 +1,9 @@
 package com.tota.sujjest;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -32,6 +34,9 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
 {
+
+    public static AppStateEnum   appState = AppStateEnum.HOME_SCREEN;
+
     public static final String ID ="MainActivity";
     public static ArrayList<Restaurant> restaurantArrayList = null;
     /**
@@ -39,6 +44,9 @@ public class MainActivity extends AppCompatActivity
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+    private MapInputActivity m_mapInputActivity;
+    private MainActivityFragment m_mainActivityFragment;
+    private RecommendedFragment m_recommendedFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,16 +55,48 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+        getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+
 
         Log.d("Main","MainActivity; OnCreate");
         MapInputActivity mapInputActivity = new MapInputActivity();
+        m_mapInputActivity = mapInputActivity;
 
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.replace(R.id.container, mapInputActivity, "MapInput");
             ft.addToBackStack("MapInput");
             //  ft.add(R.id.map,mapFragment,"map");
             ft.commit();
+            appState = AppStateEnum.MAPVIEW_SCREEN;
 
+        getFragmentManager().addOnBackStackChangedListener(
+                new FragmentManager.OnBackStackChangedListener() {
+                    public void onBackStackChanged() {
+                        // Update your UI here.
+                        Log.i(ID, "Back Stack Changed Listener called");
+
+                        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+                        switch(appState)
+
+                        {
+                            case HOME_SCREEN :
+                            case MAPVIEW_SCREEN:
+                            {
+                                MenuItem menuItem =  myToolbar.getMenu().findItem(R.id.action_search);
+                                if(menuItem !=null)
+                                menuItem.setVisible(true);
+
+                                break;
+                            }
+                            default: {
+                                MenuItem menuItem = myToolbar.getMenu().findItem(R.id.action_search);
+                                if (menuItem != null)
+                                    menuItem.setVisible(false);
+                            }
+                        }
+
+                    }
+                });
 
     }
 
@@ -107,12 +147,32 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Log.d(ID,"Back button Pressed");
-        getFragmentManager().popBackStackImmediate();
 
-    }
+      Log.d(ID, "Back button Pressed");
+        Log.d(ID, "Backstack count: " + getFragmentManager().getBackStackEntryCount());
+
+        // set the next state
+        switch (appState)
+        {
+            case RECOMMENDATION_SCREEN:
+            case REREIVING_REVIEWS_SCREEN:
+                appState = AppStateEnum.MAPVIEW_SCREEN;
+                break;
+            case MAPVIEW_SCREEN:
+                appState = AppStateEnum.HOME_SCREEN;
+                break;
+            default:
+                appState = AppStateEnum.HOME_SCREEN;
+        }
+
+            if(getFragmentManager().getBackStackEntryCount() != 0) {
+                getFragmentManager().popBackStack();
+            } else {
+                super.onBackPressed();
+            }
+
+        }
+
 
     @Override
     public void onStart() {
@@ -129,7 +189,9 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(ID,"onResume starting");
+    }
 }

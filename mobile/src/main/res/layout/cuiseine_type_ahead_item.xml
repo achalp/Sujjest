@@ -5,9 +5,9 @@
     android:gravity="center_vertical"
     android:layout_alignParentTop="true"
     android:layout_alignParentBottom="true"
-    android:textStyle="bold"
     android:paddingBottom="@dimen/fab_margin"
     android:textAppearance="?android:attr/textAppearanceMedium"
+    android:textColor="#000"
     android:id="@+id/txtTitle"
     xmlns:android="http://schemas.android.com/apk/res/android">
   </TextView>
