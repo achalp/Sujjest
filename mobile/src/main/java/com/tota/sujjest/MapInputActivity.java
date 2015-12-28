@@ -75,7 +75,7 @@ public class MapInputActivity extends Fragment
     private RequestTask requestTask;
     private GoogleMap gm;
     public GoogleApiClient client;
-    Double latitude, longitude;
+    Double latitude=0.0, longitude=0.0;
     private LocationManager locationManager;
     private String provider;
     protected String where;
@@ -523,7 +523,7 @@ public class MapInputActivity extends Fragment
         });
 
 // won't work in newer versions of android - post JellyBean
-        findWhereTextView.setOnKeyListener(new View.OnKeyListener() {
+  /*      findWhereTextView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 Log.d(ID, "IMEAction: " + ((TextView) v).getImeActionId());
@@ -544,7 +544,7 @@ public class MapInputActivity extends Fragment
                 }
                 return false;
             }
-        });
+        });*/
 
         //will work in newer versions of Android and is the recommended way.
         findWhereTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -558,11 +558,11 @@ public class MapInputActivity extends Fragment
                     //if they entered something useful then attempt to resolve.
                     if (where.length() > 0) {
                         initLocationFromName(where);
-                        ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
-                        if(whereTextView != null)
-                            whereTextView.setText(where);
-                        else
-                            Log.e(ID,"WhereTextView is null");
+                      //  ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
+                      //  if(whereTextView != null)
+                            v.setText(where);
+                      //  else
+                        //    Log.e(ID,"WhereTextView is null");
                         if(mlocationChanged) {
                             if (gm != null)
                                 gm.clear();
