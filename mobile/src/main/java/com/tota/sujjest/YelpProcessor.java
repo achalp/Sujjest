@@ -357,7 +357,7 @@ public class YelpProcessor {
             return reviewArrayList;
 
         } catch (IOException e) {
-            Log.d("Reviews", "Exception:" + e.toString());
+            Log.e(ID, "Exception:" + e.toString());
             throw e;
         }
 

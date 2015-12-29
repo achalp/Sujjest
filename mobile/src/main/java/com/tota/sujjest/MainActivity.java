@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity
     private MapInputActivity m_mapInputActivity;
     private MainActivityFragment m_mainActivityFragment;
     private RecommendedFragment m_recommendedFragment;
+    private Menu optionsMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,15 +59,8 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
 
-        Log.d("Main","MainActivity; OnCreate");
-        MapInputActivity mapInputActivity = new MapInputActivity();
-        m_mapInputActivity = mapInputActivity;
+        Log.d("Main", "MainActivity; OnCreate");
 
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.container, mapInputActivity, "MapInput");
-            ft.addToBackStack("MapInput");
-            //  ft.add(R.id.map,mapFragment,"map");
-            ft.commit();
             appState = AppStateEnum.MAPVIEW_SCREEN;
 
         getFragmentManager().addOnBackStackChangedListener(
@@ -100,12 +94,35 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    public void setRefreshActionButtonState(final boolean refreshing) {
+
+        if (optionsMenu != null) {
+            final MenuItem refreshItem = optionsMenu
+                    .findItem(R.id.action_search);
+            if (refreshItem != null) {
+                if (refreshing) {
+                    Log.e(ID,"setting refresh view");
+                    refreshItem.setActionView(R.layout.actionbar_indeterminate_progress);
+                } else {
+                    Log.e(ID,"unsetting refresh view");
+                    refreshItem.setActionView(null);
+                }
+            }
+            else
+                Log.e(ID,"refreshItem menuitem is null");
+        }
+        else
+            Log.e(ID,"optionsMenu is null");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+       Log.e(ID,"OnCreateOptionsMenu");
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        optionsMenu = menu;
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -116,9 +133,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+      /*  if (id == R.id.action_settings) {
             return true;
-        }
+        }*/
 
         if (id == R.id.action_search) {
             CardView cardView = (CardView) findViewById(R.id.searchCard);
@@ -193,5 +210,15 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         Log.d(ID,"onResume starting");
+    if (m_mapInputActivity == null) {
+        MapInputActivity mapInputActivity = new MapInputActivity();
+        m_mapInputActivity = mapInputActivity;
+    }
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.replace(R.id.container, m_mapInputActivity, "MapInput");
+        ft.addToBackStack("MapInput");
+        //  ft.add(R.id.map,mapFragment,"map");
+        ft.commit();
+
     }
 }

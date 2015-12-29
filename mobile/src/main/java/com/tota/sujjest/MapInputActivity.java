@@ -24,6 +24,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -135,6 +137,8 @@ public class MapInputActivity extends Fragment
         if(mlocationChanged) //yes it did. get the list again.
         {
             gm.clear();
+            MainActivity activity = (MainActivity)getActivity();
+            activity.setRefreshActionButtonState(true);
             requestTask = new RequestTask();
             requestTask.execute();
         }
@@ -450,7 +454,7 @@ public class MapInputActivity extends Fragment
             FragmentTransaction ft;
             ft = this.getFragmentManager().beginTransaction();
 
-            ft.add(R.id.map, mapFragment, "map");
+            ft.replace(R.id.map, mapFragment, "map");
             //  ft.addToBackStack(mapFragment.getClass().getSimpleName());
             ft.commit();
 
@@ -490,6 +494,9 @@ public class MapInputActivity extends Fragment
                 if (what.length() > 0) {
                     if (gm != null)
                         gm.clear();
+                    MainActivity activity = (MainActivity)getActivity();
+                    activity.setRefreshActionButtonState(true);
+
                     requestTask = new RequestTask();
                     requestTask.execute();
                 }
@@ -519,6 +526,36 @@ public class MapInputActivity extends Fragment
 
                 what = s.toString();
 
+            }
+        });
+
+        findWhatTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_GO) {
+                    //hide hte keyboard
+                    InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    //if they entered something useful then attempt to resolve.
+                    if (what.length() > 0) {
+
+                            if (gm != null)
+                                gm.clear();
+                            MainActivity activity = (MainActivity) getActivity();
+                            activity.setRefreshActionButtonState(true);
+                            if (requestTask !=null)
+                                requestTask.cancel(true);
+                            requestTask = new RequestTask();
+                            requestTask.execute();
+                        handled = true;
+                        }
+                    }
+
+
+
+
+                return handled;
             }
         });
 
@@ -566,6 +603,9 @@ public class MapInputActivity extends Fragment
                         if(mlocationChanged) {
                             if (gm != null)
                                 gm.clear();
+                            MainActivity activity = (MainActivity)getActivity();
+                            activity.setRefreshActionButtonState(true);
+
                             requestTask = new RequestTask();
                             requestTask.execute();
                         }
@@ -647,7 +687,7 @@ public class MapInputActivity extends Fragment
 
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.remove(MapInputActivity.this);
-                ft.add(R.id.container, ma, "main");
+                ft.replace(R.id.container, ma, "main");
                 ft.addToBackStack(this.getClass().getSimpleName());
 
               //  ft.addToBackStack("main");
@@ -674,6 +714,9 @@ Log.d(ID,"onMapReady Starting");
 
         //    gm.setMyLocationEnabled(true);
     //    gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(gm.getMyLocation().getLatitude(), gm.getMyLocation().getLongitude()),15));
+
+        MainActivity activity = (MainActivity)getActivity();
+        activity.setRefreshActionButtonState(true);
         requestTask = new RequestTask();
         requestTask.execute();
     }
@@ -730,7 +773,7 @@ Log.d(ID,"onMapReady Starting");
 
 
             } catch (IOException e) {
-                Log.e("Error", e.toString());
+                Log.e(ID, e.toString());
                 //return "Error: IOExeption retrieving restaurants from Yelp";
             }
 
@@ -761,13 +804,14 @@ Log.d(ID,"onMapReady Starting");
             super.onPostExecute(restaurantArrayList);
 
 
-            if(gm!=null &&
+            if(gm!=null && restaurantArrayList != null &&
                     restaurantArrayList.size() > 0 &&
                     restaurantArrayList.get(0)!=null &&
                     restaurantArrayList.get(0).getGoogleAddress() !=null )
             gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getGoogleAddress().getLatitude(), restaurantArrayList.get(0).getGoogleAddress().getLongitude()), 11));
 
-
+            MainActivity activity = (MainActivity)getActivity();
+            activity.setRefreshActionButtonState(false);
 
         }
 
@@ -777,5 +821,7 @@ Log.d(ID,"onMapReady Starting");
 
         }
     }
+
+
 }
 

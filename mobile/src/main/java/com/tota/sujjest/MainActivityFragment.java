@@ -284,6 +284,7 @@ public class MainActivityFragment extends Fragment {
 
             recommendedFragment.setArguments(b);
             FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.remove(MainActivityFragment.this);
             ft.replace(R.id.container, recommendedFragment,"Recommendation");
             //            ft.add(R.id.fragment,recommendedFragment);
             //  ft.hide(MainActivityFragment);
