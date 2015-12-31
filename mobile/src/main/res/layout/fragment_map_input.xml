@@ -39,6 +39,8 @@
             android:layout_height="wrap_content"
             android:text=""
             android:hint="What?"
+            android:lines="1"
+            android:elevation="10dp"
             android:id="@+id/findWhatTextView"
             android:layout_alignParentLeft="true"
             android:drawableRight="@android:drawable/presence_offline"
@@ -84,7 +86,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|start"
             android:src="@android:drawable/ic_menu_mylocation"
-            android:alpha="0.5"
+            android:alpha="1"
             />
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
@@ -93,7 +95,7 @@
             android:layout_gravity="bottom|start"
             android:layout_marginTop="@dimen/fab_marginTop"
             android:layout_marginBottom="@dimen/fab_margin"
-            android:alpha="0.5"
+            android:alpha="1"
 
             android:src="@android:drawable/ic_media_play"
             app:elevation="5dp"

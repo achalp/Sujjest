@@ -56,8 +56,12 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
 
+        actionBar.setDefaultDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeAsUpIndicator(android.R.drawable.arrow_up_float);
+        actionBar.setDisplayShowHomeEnabled(true);
 
         Log.d("Main", "MainActivity; OnCreate");
 
@@ -92,73 +96,23 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
 
-    }
-
-    public void setRefreshActionButtonState(final boolean refreshing) {
-
-        if (optionsMenu != null) {
-            final MenuItem refreshItem = optionsMenu
-                    .findItem(R.id.action_search);
-            if (refreshItem != null) {
-                if (refreshing) {
-                    Log.e(ID,"setting refresh view");
-                    refreshItem.setActionView(R.layout.actionbar_indeterminate_progress);
-                } else {
-                    Log.e(ID,"unsetting refresh view");
-                    refreshItem.setActionView(null);
-                }
-            }
-            else
-                Log.e(ID,"refreshItem menuitem is null");
+        if (m_mapInputActivity == null) {
+            MapInputActivity mapInputActivity = new MapInputActivity();
+            m_mapInputActivity = mapInputActivity;
         }
-        else
-            Log.e(ID,"optionsMenu is null");
+        m_mapInputActivity.setHasOptionsMenu(true);
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.replace(R.id.container, m_mapInputActivity, "MapInput");
+        //    ft.addToBackStack("MapInput");
+        //  ft.add(R.id.map,mapFragment,"map");
+        ft.commit();
+
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-       Log.e(ID,"OnCreateOptionsMenu");
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        optionsMenu = menu;
 
-        return super.onCreateOptionsMenu(menu);
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-      /*  if (id == R.id.action_settings) {
-            return true;
-        }*/
-
-        if (id == R.id.action_search) {
-            CardView cardView = (CardView) findViewById(R.id.searchCard);
-            FrameLayout fragment = (FrameLayout) findViewById(R.id.container);
-            if( cardView!= null && fragment != null )
-                if(cardView.getVisibility() == View.VISIBLE)
-                {
-                    //do nothing
-                   cardView.setVisibility(View.GONE);
-                    fragment.invalidate();
-                }
-                else
-                {
-                    //show
-                   cardView.setVisibility(View.VISIBLE);
-                    fragment.invalidate();
-
-                }
-             return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
 
 
@@ -205,18 +159,27 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
+
+
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(ID,"onResume starting");
+
     if (m_mapInputActivity == null) {
         MapInputActivity mapInputActivity = new MapInputActivity();
         m_mapInputActivity = mapInputActivity;
     }
+        m_mapInputActivity.setHasOptionsMenu(true);
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.container, m_mapInputActivity, "MapInput");
-        ft.addToBackStack("MapInput");
+    //    ft.addToBackStack("MapInput");
         //  ft.add(R.id.map,mapFragment,"map");
         ft.commit();
 

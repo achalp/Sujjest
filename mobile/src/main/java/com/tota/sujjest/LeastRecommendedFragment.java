@@ -4,10 +4,8 @@ package com.tota.sujjest;
  */
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v13.app.FragmentPagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,13 +19,12 @@ import com.tota.sujjest.Entity.Restaurant;
 
 import java.net.URLDecoder;
 
-public class RecommendedFragment extends Fragment {
+public class LeastRecommendedFragment extends Fragment {
 
     private Bundle arguments;
     private View  view;
-    private static final String ID="RecommendedFragment";
-    Restaurant restaurant=null,r2=null,r3=null;
-
+    private static final String ID="LeastRecommendedFragment";
+    private Restaurant restaurant=null,r2=null,r3=null;
 
 
     @Override
@@ -137,10 +134,10 @@ public class RecommendedFragment extends Fragment {
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        Restaurant r = (Restaurant)args.get("MostRecommendedRestaurant-1");
+        Restaurant r = (Restaurant)args.get("LeastRecommendedRestaurant-1");
         restaurant=r;
-         r2 = (Restaurant)args.get("MostRecommendedRestaurant-2");
-        r3 = (Restaurant)args.get("MostRecommendedRestaurant-3");
+         r2 = (Restaurant)args.get("LeastRecommendedRestaurant-2");
+        r3 = (Restaurant)args.get("LeastRecommendedRestaurant-3");
 
     }
 }

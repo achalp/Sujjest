@@ -125,7 +125,7 @@ public class MainActivityFragment extends Fragment {
 
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
                 //next page
-                restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+               restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
                 restaurantArrayList.addAll(restaurantArrayList2);
               //  MainActivity.restaurantArrayList = restaurantArrayList;
 
@@ -279,13 +279,15 @@ public class MainActivityFragment extends Fragment {
 
 
 
-            RecommendedFragment recommendedFragment = new RecommendedFragment();
+//            RecommendedFragment recommendedFragment = new RecommendedFragment();
+  //          recommendedFragment.setArguments(b);
 
+            RecommendationFragment recommendationFragment = new RecommendationFragment();
+            recommendationFragment.setArguments(b);
 
-            recommendedFragment.setArguments(b);
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.remove(MainActivityFragment.this);
-            ft.replace(R.id.container, recommendedFragment,"Recommendation");
+            ft.replace(R.id.container, recommendationFragment, "Recommendation");
             //            ft.add(R.id.fragment,recommendedFragment);
             //  ft.hide(MainActivityFragment);
             //        ft.hide(getFragmentManager().)

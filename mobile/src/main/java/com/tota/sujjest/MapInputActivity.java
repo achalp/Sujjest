@@ -19,12 +19,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.CardView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,10 +86,23 @@ public class MapInputActivity extends Fragment
     protected String what;
     protected MapFragment mapFragment;
     private boolean mlocationChanged;
+    private Menu optionsMenu;
 
 
     public MapInputActivity() {
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.d(ID,"Starting onSaveInstanceState");
+        // Save the user's current game state
+        savedInstanceState.putString("what",what);
+        savedInstanceState.putString("where", where);
+
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
 
 
     public void addRestaurantToMap(Restaurant restaurant) {
@@ -99,10 +114,90 @@ public class MapInputActivity extends Fragment
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        Log.e(ID,"OnCreateOptionsMenu");
+       inflater.inflate(R.menu.menu_main, menu);
+        optionsMenu = menu;
+
+  //      return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+      /*  if (id == R.id.action_settings) {
+            return true;
+        }*/
+
+        if (id == R.id.action_search) {
+            CardView cardView = (CardView) getActivity().findViewById(R.id.searchCard);
+            FrameLayout fragment = (FrameLayout) getActivity().findViewById(R.id.container);
+            if( cardView!= null && fragment != null )
+                if(cardView.getVisibility() == View.VISIBLE)
+                {
+                    //do nothing
+                    cardView.setVisibility(View.GONE);
+                    fragment.invalidate();
+                }
+                else
+                {
+                    //show
+                    cardView.setVisibility(View.VISIBLE);
+                    fragment.invalidate();
+
+                }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void setRefreshActionButtonState(final boolean refreshing) {
+
+        if (optionsMenu != null) {
+            final MenuItem refreshItem = optionsMenu
+                    .findItem(R.id.action_search);
+            if (refreshItem != null) {
+                if (refreshing) {
+                    Log.e(ID,"setting refresh view");
+                    refreshItem.setActionView(R.layout.actionbar_indeterminate_progress);
+                } else {
+                    Log.e(ID,"unsetting refresh view");
+                    refreshItem.setActionView(null);
+                }
+            }
+            else
+                Log.e(ID,"refreshItem menuitem is null");
+        }
+        else
+            Log.e(ID,"optionsMenu is null");
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
 
 
         super.onCreate(savedInstanceState);
+        if(savedInstanceState !=null) {
+            Log.d(ID, "Bundle:What: " + savedInstanceState.getString("what"));
+
+            Log.d(ID, "Bundle:Where: " + savedInstanceState.getString("where"));
+        }else
+        {
+            Log.e(ID,"saved instance in OnCreate is null");
+        }
 
         Log.d(ID, "OnCreate Starting");
 
@@ -137,8 +232,7 @@ public class MapInputActivity extends Fragment
         if(mlocationChanged) //yes it did. get the list again.
         {
             gm.clear();
-            MainActivity activity = (MainActivity)getActivity();
-            activity.setRefreshActionButtonState(true);
+            setRefreshActionButtonState(true);
             requestTask = new RequestTask();
             requestTask.execute();
         }
@@ -471,16 +565,11 @@ public class MapInputActivity extends Fragment
 //        where = findWhereTextView.getText().toString();
 
 
-        findWhereTextView.setText(where);
-        what = findWhatTextView.getText().toString();
-
 
 
         findWhatTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Snackbar.make(view, "Autocomplete Clicked...", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
 
                 String data = (String) parent.getItemAtPosition(position);
                 Log.d(ID, "Item Selected: " + data);
@@ -494,8 +583,7 @@ public class MapInputActivity extends Fragment
                 if (what.length() > 0) {
                     if (gm != null)
                         gm.clear();
-                    MainActivity activity = (MainActivity)getActivity();
-                    activity.setRefreshActionButtonState(true);
+                   setRefreshActionButtonState(true);
 
                     requestTask = new RequestTask();
                     requestTask.execute();
@@ -538,21 +626,22 @@ public class MapInputActivity extends Fragment
                     InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
                     //if they entered something useful then attempt to resolve.
-                    if (what.length() > 0) {
+                    if (what !=null ) {
 
-                            if (gm != null)
-                                gm.clear();
-                            MainActivity activity = (MainActivity) getActivity();
-                            activity.setRefreshActionButtonState(true);
-                            if (requestTask !=null)
-                                requestTask.cancel(true);
-                            requestTask = new RequestTask();
-                            requestTask.execute();
-                        handled = true;
-                        }
+                        if (gm != null)
+                            gm.clear();
+
+                        setRefreshActionButtonState(true);
+
+                        if (requestTask != null)
+                            requestTask.cancel(true);
+
+                        requestTask = new RequestTask();
+                        requestTask.execute();
+
                     }
-
-
+                    handled = true;
+                }
 
 
                 return handled;
@@ -603,8 +692,7 @@ public class MapInputActivity extends Fragment
                         if(mlocationChanged) {
                             if (gm != null)
                                 gm.clear();
-                            MainActivity activity = (MainActivity)getActivity();
-                            activity.setRefreshActionButtonState(true);
+                            setRefreshActionButtonState(true);
 
                             requestTask = new RequestTask();
                             requestTask.execute();
@@ -700,7 +788,16 @@ public class MapInputActivity extends Fragment
 
             }
         });
+        Log.d(ID, "Restoring saved state:");
+        if(savedInstanceState != null) {
+            what = savedInstanceState.getString("what");
+            where = savedInstanceState.getString("where");
+        }
+        else {
+            findWhereTextView.setText(where);
+            what = findWhatTextView.getText().toString();
 
+        }
         return map_input;
     }
 
@@ -715,8 +812,7 @@ Log.d(ID,"onMapReady Starting");
         //    gm.setMyLocationEnabled(true);
     //    gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(gm.getMyLocation().getLatitude(), gm.getMyLocation().getLongitude()),15));
 
-        MainActivity activity = (MainActivity)getActivity();
-        activity.setRefreshActionButtonState(true);
+        setRefreshActionButtonState(true);
         requestTask = new RequestTask();
         requestTask.execute();
     }
@@ -742,17 +838,17 @@ Log.d(ID,"onMapReady Starting");
                 yelpProcessor.setDesc(what);
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
                 //next page
-               restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+              restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
                restaurantArrayList.addAll(restaurantArrayList2);
                 //  MainActivity.restaurantArrayList = restaurantArrayList;
 
-
+                geocoder = new Geocoder(getActivity());
                 for(Restaurant r: restaurantArrayList )
                 {
 
                     List<Address> addressList;
 
-                    geocoder = new Geocoder(getActivity());
+
                     addressList = geocoder.getFromLocationName(r.getAddress(),1);
                     if(addressList!=null)
                     {
@@ -773,7 +869,7 @@ Log.d(ID,"onMapReady Starting");
 
 
             } catch (IOException e) {
-                Log.e(ID, e.toString());
+                Log.e(ID, "Exception retrieving Yelp.Com : " + e.toString());
                 //return "Error: IOExeption retrieving restaurants from Yelp";
             }
 
@@ -810,8 +906,7 @@ Log.d(ID,"onMapReady Starting");
                     restaurantArrayList.get(0).getGoogleAddress() !=null )
             gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getGoogleAddress().getLatitude(), restaurantArrayList.get(0).getGoogleAddress().getLongitude()), 11));
 
-            MainActivity activity = (MainActivity)getActivity();
-            activity.setRefreshActionButtonState(false);
+           setRefreshActionButtonState(false);
 
         }
 
