@@ -302,8 +302,9 @@ public class MapInputActivity extends Fragment
             } catch (IOException e) {
                 Log.e(ID, "Exception thrown while geoCoding current location: " + e.toString());
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-                alertDialogBuilder.setTitle("Unable to access source websites");
-                alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
+                alertDialogBuilder.setTitle("Can't figure out your physical location");
+                alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. \n Try again by hitting the locate me button or choosing a different location manually.\n" + e.getMessage());
+                alertDialogBuilder.setPositiveButton("Dismiss",null);
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 alertDialog.show();
             }
@@ -860,23 +861,12 @@ public class MapInputActivity extends Fragment
                     }
                 } catch (Exception e) {
                     Log.e(ID, "Exception geodcoding: " + e.toString());
-                    //Log.e("Error", e.toString());
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-                    alertDialogBuilder.setTitle("Unable to access source websites");
-                    alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
+
                 }
 
             } catch (IOException e) {
                 Log.e(ID, "Exception retrieving Yelp.Com : " + e.toString());
-                //return "Error: IOExeption retrieving restaurants from Yelp";
-                //Log.e("Error", e.toString());
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-                alertDialogBuilder.setTitle("Unable to access source websites");
-                alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
-                AlertDialog alertDialog = alertDialogBuilder.create();
-                alertDialog.show();
+
             }
 
             return restaurantArrayList;

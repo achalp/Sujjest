@@ -4,15 +4,16 @@ package com.tota.sujjest;
  */
 
 import android.app.Fragment;
-import android.app.FragmentManager;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v13.app.FragmentPagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.MemoryPolicy;
@@ -27,8 +28,9 @@ public class RecommendedFragment extends Fragment {
     private View  view;
     private static final String ID="RecommendedFragment";
     Restaurant restaurant=null,r2=null,r3=null;
-
-
+    private ListView mListView;
+    private RestaurantArrayAdapter mRestaurantArrayAdapter;
+    private Restaurant[] mRestaurantArray;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,12 +47,48 @@ public class RecommendedFragment extends Fragment {
 
         Log.d(ID, "Starting onCreateView");
 
-        View view = inflater.inflate(R.layout.fragment_recommended_most, null);
+        View view = inflater.inflate(R.layout.fragment_recommended_list, null);
+        this.view = view;
+        mListView = (ListView)view.findViewById(R.id.recommendationList);
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(),R.layout.fragment_recommended_list_item, mRestaurantArray);
+        mListView.setAdapter(mRestaurantArrayAdapter);
+
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.e(ID, "Item Clicked at position: " + position + " with Id= " + id);
+                Log.e(ID, "Item is: " + mListView.getItemAtPosition(position));
+                String uriString = "http://yelp.com/biz/" + ((Restaurant)mListView.getItemAtPosition(position)).getBiz_key();
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uriString)));
+            }
+
+
+        });
+
+        mListView.setOnItemSelectedListener(new ListView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.e(ID, "Item Selected at position: " + position + " with Id= " + id);
+                Log.e(ID, "Item is: " + mListView.getItemAtPosition(position));
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        return view;
+
+      /* OLD
+      View view = inflater.inflate(R.layout.fragment_recommended_list_item, null);
         this.view = view;
         ImageView imageView;
-        TextView address,name,numReviews,cost;
+        TextView address,name,numReviews,cost;*/
 
-
+/*OLD
         if(null != restaurant ) {
 
             imageView = (ImageView) view.findViewById(R.id.imageViewRecommended);
@@ -127,9 +165,10 @@ public class RecommendedFragment extends Fragment {
         {
             Log.e("Error", "Restaurant 3 is null");
         }
+           return view;
+*/
 
 
-        return view;
     }
 
 
@@ -138,9 +177,13 @@ public class RecommendedFragment extends Fragment {
     public void setArguments(Bundle args) {
         super.setArguments(args);
         Restaurant r = (Restaurant)args.get("MostRecommendedRestaurant-1");
-        restaurant=r;
          r2 = (Restaurant)args.get("MostRecommendedRestaurant-2");
         r3 = (Restaurant)args.get("MostRecommendedRestaurant-3");
+        mRestaurantArray = new Restaurant[3];
+        mRestaurantArray[0] = r;
+        mRestaurantArray[1] = r2;
+        mRestaurantArray[2]=r3;
+
 
     }
 }

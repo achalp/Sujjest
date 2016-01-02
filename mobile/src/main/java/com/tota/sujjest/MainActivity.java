@@ -2,6 +2,7 @@ package com.tota.sujjest;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -19,6 +20,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
@@ -34,6 +36,41 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
 {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        // Inflate the menu; this adds items to the action bar if it is present.
+        Log.e(ID, "OnCreateOptionsMenu");
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_home, menu);
+        optionsMenu = menu;
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+      /*  if (id == R.id.action_settings) {
+            return true;
+        }*/
+
+        if (id == R.id.action_settings) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("About");
+            alertDialogBuilder.setMessage("Sujjest helps you decided on the best restarant options and importantly, advises you on choices that others haven't had a good experience with");
+            alertDialogBuilder.setPositiveButton("Dismiss",null);
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     public static AppStateEnum   appState = AppStateEnum.HOME_SCREEN;
 
@@ -95,6 +132,21 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
 
+//copied from onResume. If doesnt work move it back:
+        //  if (m_mapInputActivity == null) {
+        MapInputActivity mapInputActivity = new MapInputActivity();
+        m_mapInputActivity = mapInputActivity;
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+        ft.replace(R.id.container, m_mapInputActivity, "MapInput"); //was add
+
+        // ft.addToBackStack("Main");
+        //  ft.add(R.id.map,mapFragment,"map");
+
+        ft.commit();
+        getFragmentManager().executePendingTransactions();
+
+        Log.d(ID, "backstack count: " + getFragmentManager().getBackStackEntryCount());
 
 
     }
@@ -177,20 +229,6 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         Log.d(ID, "onResume starting");
-      //  if (m_mapInputActivity == null) {
-            MapInputActivity mapInputActivity = new MapInputActivity();
-            m_mapInputActivity = mapInputActivity;
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-
-            ft.replace(R.id.container, m_mapInputActivity, "MapInput"); //was add
-
-            // ft.addToBackStack("Main");
-            //  ft.add(R.id.map,mapFragment,"map");
-
-            ft.commit();
-              getFragmentManager().executePendingTransactions();
-
-            Log.d(ID,"backstack count: " + getFragmentManager().getBackStackEntryCount());
 
 
     }

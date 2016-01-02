@@ -105,6 +105,7 @@ public class RecommendationFragment extends Fragment {
 
         mPager = (ViewPager) v.findViewById(R.id.recommendationPager);
         mPager.setAdapter(mAdapter);
+        mPager.setCurrentItem(0);
 
         mPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
