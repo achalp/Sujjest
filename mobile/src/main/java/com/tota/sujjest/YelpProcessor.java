@@ -143,11 +143,11 @@ public class YelpProcessor {
 
     public final static String YELP_BIZ_BASE_URL = "http://yelp.com/biz/";
 
-    private final static String CITY="Bellevue";
-    private final static String STATE="WA" ;
+    private final static String CITY="";
+    private final static String STATE="" ;
     private final static String SORTBY="review_count";
     private final static String CUISINE = " ";
-    private final static String DESC = "Thai Restaurants";
+    private final static String DESC = "Restaurants";
 
     private String city;
     private String state;

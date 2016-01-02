@@ -45,22 +45,29 @@ public class RecommendationFragment extends Fragment {
         @Override
         public Fragment getItem(int position) {
 
-          if(position == 0) {
-              if(rec == null) {
-                  rec = new RecommendedFragment();
-               }
-              rec.setArguments(mBundle);
+            if (position == 0) {
+                if (rec == null) {
+                    rec = new RecommendedFragment();
+                    rec.setArguments(mBundle);
 
-              return rec;
-          }
-            else
-          {
-              if(lrec == null)
-                lrec = new LeastRecommendedFragment();
+                } else {
+                    Log.d(ID, "Re-using fragment");
+                    rec.setArguments(mBundle);
 
-              lrec.setArguments(mBundle);
-              return lrec;
-           }
+                }
+
+                return rec;
+            }
+            if (position == 1) {
+                if (lrec == null)
+                    lrec = new LeastRecommendedFragment();
+
+                lrec.setArguments(mBundle);
+                return lrec;
+            } else {
+                Log.e(ID,"Position returned is not 0 or 1" );
+                return null;
+            }
         }
     }
     @Override
@@ -76,6 +83,11 @@ public class RecommendationFragment extends Fragment {
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
+     //   mBundle = args;
+    }
+
+    public void setRecommendations(Bundle args) {
+      //  super.setArguments(args);
         mBundle = args;
     }
 
@@ -85,12 +97,10 @@ public class RecommendationFragment extends Fragment {
 
        Log.d(ID, "Starting onCreateView");
         View v = inflater.inflate(R.layout.fragment_recommended,container,false);
-        mAdapter = new MyAdapter(getFragmentManager());
+        mAdapter = new MyAdapter(getChildFragmentManager());
 
         TabLayout tabLayout = (TabLayout) v.findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Recommended"));
-        tabLayout.addTab(tabLayout.newTab().setText("Not Recommended"));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+       tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
 
         mPager = (ViewPager) v.findViewById(R.id.recommendationPager);
@@ -114,7 +124,64 @@ public class RecommendationFragment extends Fragment {
             }
         });
 
+        tabLayout.setupWithViewPager(mPager);
+        tabLayout.getTabAt(0).setText("Recommended");
+        tabLayout.getTabAt(1).setText("Not Recommended");
+
         return v;
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(ID, "OnResume");
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(ID, "OnPause");
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(ID, "OnStop");
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(ID, "OnStart");
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(ID, "OnSaveInstanceState");
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.d(ID,"OnDetach");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(ID, "OnDestroy");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d(ID, "OnDestroyView");
     }
 }

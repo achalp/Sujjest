@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity
         actionBar.setHomeAsUpIndicator(android.R.drawable.arrow_up_float);
         actionBar.setDisplayShowHomeEnabled(true);
 
-        Log.d("Main", "MainActivity; OnCreate");
+        Log.d(ID, "MainActivity; OnCreate");
 
             appState = AppStateEnum.MAPVIEW_SCREEN;
 
@@ -74,15 +74,14 @@ public class MainActivity extends AppCompatActivity
                         Log.i(ID, "Back Stack Changed Listener called");
 
                         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-                        switch(appState)
+                        switch (appState)
 
                         {
-                            case HOME_SCREEN :
-                            case MAPVIEW_SCREEN:
-                            {
-                                MenuItem menuItem =  myToolbar.getMenu().findItem(R.id.action_search);
-                                if(menuItem !=null)
-                                menuItem.setVisible(true);
+                            case HOME_SCREEN:
+                            case MAPVIEW_SCREEN: {
+                                MenuItem menuItem = myToolbar.getMenu().findItem(R.id.action_search);
+                                if (menuItem != null)
+                                    menuItem.setVisible(true);
 
                                 break;
                             }
@@ -96,17 +95,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
 
-        if (m_mapInputActivity == null) {
-            MapInputActivity mapInputActivity = new MapInputActivity();
-            m_mapInputActivity = mapInputActivity;
-        }
-        m_mapInputActivity.setHasOptionsMenu(true);
 
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.container, m_mapInputActivity, "MapInput");
-        //    ft.addToBackStack("MapInput");
-        //  ft.add(R.id.map,mapFragment,"map");
-        ft.commit();
 
     }
 
@@ -136,11 +125,26 @@ public class MainActivity extends AppCompatActivity
                 appState = AppStateEnum.HOME_SCREEN;
         }
 
-            if(getFragmentManager().getBackStackEntryCount() != 0) {
-                getFragmentManager().popBackStack();
-            } else {
-                super.onBackPressed();
-            }
+                if(getFragmentManager().getBackStackEntryCount() != 0) {
+
+                    Log.d(ID, "about to popstack");
+/*
+                    MapInputActivity mapInputActivity = new MapInputActivity();
+                    m_mapInputActivity = mapInputActivity;
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+                    ft.replace(R.id.container, m_mapInputActivity, "MapInput"); //was add
+
+                    // ft.addToBackStack("Main");
+                    //  ft.add(R.id.map,mapFragment,"map");
+
+                    ft.commit();*/
+
+                getFragmentManager().popBackStack("MapInput",FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                }
+                  else
+                      super.onBackPressed();
+
 
         }
 
@@ -149,6 +153,7 @@ public class MainActivity extends AppCompatActivity
     public void onStart() {
         super.onStart();
 
+        Log.d(ID, "onStart");
 
     }
 
@@ -156,32 +161,37 @@ public class MainActivity extends AppCompatActivity
     public void onStop() {
         super.onStop();
 
+        Log.d(ID, "onStop");
 
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(ID,"onPause");
 
     }
-
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(ID,"onResume starting");
+        Log.d(ID, "onResume starting");
+      //  if (m_mapInputActivity == null) {
+            MapInputActivity mapInputActivity = new MapInputActivity();
+            m_mapInputActivity = mapInputActivity;
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
 
-    if (m_mapInputActivity == null) {
-        MapInputActivity mapInputActivity = new MapInputActivity();
-        m_mapInputActivity = mapInputActivity;
-    }
-        m_mapInputActivity.setHasOptionsMenu(true);
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.container, m_mapInputActivity, "MapInput");
-    //    ft.addToBackStack("MapInput");
-        //  ft.add(R.id.map,mapFragment,"map");
-        ft.commit();
+            ft.replace(R.id.container, m_mapInputActivity, "MapInput"); //was add
+
+            // ft.addToBackStack("Main");
+            //  ft.add(R.id.map,mapFragment,"map");
+
+            ft.commit();
+              getFragmentManager().executePendingTransactions();
+
+            Log.d(ID,"backstack count: " + getFragmentManager().getBackStackEntryCount());
+
 
     }
 }

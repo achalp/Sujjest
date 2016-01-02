@@ -1,9 +1,11 @@
 package com.tota.sujjest.Entity;
 
+import java.io.Serializable;
+
 /**
  * Created by aprabhakar on 11/24/15.
  */
-public class Sentiment {
+public class Sentiment implements Serializable {
 
     public String getSentiment() {
         return sentiment;

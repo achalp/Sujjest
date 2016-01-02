@@ -1,5 +1,6 @@
 package com.tota.sujjest;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.net.Uri;
@@ -38,6 +39,7 @@ public class MainActivityFragment extends Fragment {
     private Bundle savedInstance;
     private RequestTask requestTask;
     private String what, where;
+    private  RecommendationFragment recommendationFragment;
 
     public ArrayList<Restaurant> getRestaurantArrayList() {
         return restaurantArrayList;
@@ -69,6 +71,8 @@ public class MainActivityFragment extends Fragment {
         this.vg = container;
         this.view = inflater.inflate(R.layout.fragment_main, container, false);
         this.savedInstance = savedInstanceState;
+        ProgressBar pb = (ProgressBar) view.findViewById(R.id.progressBar);
+        pb.setProgress(0);
         return view;
 
 
@@ -79,6 +83,8 @@ public class MainActivityFragment extends Fragment {
         super.onStart();
         Log.d(ID, "Started");
 
+        ProgressBar pb = (ProgressBar) getActivity().findViewById(R.id.progressBar);
+        pb.setProgress(0);
         this.requestTask = new RequestTask();
 
         this.requestTask.execute();
@@ -126,11 +132,17 @@ public class MainActivityFragment extends Fragment {
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
                 //next page
                restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+
                 restaurantArrayList.addAll(restaurantArrayList2);
-              //  MainActivity.restaurantArrayList = restaurantArrayList;
 
             } catch (IOException e) {
                 Log.e("Error", e.toString());
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+                 alertDialogBuilder.setTitle("Unable to access source websites");
+                alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+
                 //return "Error: IOExeption retrieving restaurants from Yelp";
             }
 
@@ -249,14 +261,17 @@ public class MainActivityFragment extends Fragment {
                 Sentiment sentiment =  r.getSentiment();
 
                 StringBuilder strBuilder = new StringBuilder();
-                strBuilder.append(r.getBiz() + " "
-                        + sentiment.getScore() + " "
-                        + sentiment.getSentiment() + " "
-                        + sentiment.getMixed() + "\n");
-                Log.d("Sentiments", strBuilder.toString());
+                if(sentiment != null) {
+                    strBuilder.append(r.getBiz() + " "
+                            + sentiment.getScore() + " "
+                            + sentiment.getSentiment() + " "
+                            + sentiment.getMixed() + "\n");
+                    Log.d("Sentiments", strBuilder.toString());
+                }
+                else
+                    Log.e(ID,"Sentiment is null for Restaurant: " +r.getBiz());
 
-
-                b.putSerializable("MostRecommendedRestaurant-"+j,r);
+                        b.putSerializable("MostRecommendedRestaurant-" + j, r);
 
             }
 
@@ -266,11 +281,15 @@ public class MainActivityFragment extends Fragment {
                 r = restaurantArrayList.get(i);
                 Sentiment sentiment =  r.getSentiment();
                 StringBuilder strBuilder = new StringBuilder();
-                strBuilder.append(r.getBiz() + " "
-                        + sentiment.getScore() + " "
-                        + sentiment.getSentiment() + " "
-                        + sentiment.getMixed() + "\n");
-                Log.d("Sentiments", strBuilder.toString());
+                if(sentiment != null) {
+                    strBuilder.append(r.getBiz() + " "
+                            + sentiment.getScore() + " "
+                            + sentiment.getSentiment() + " "
+                            + sentiment.getMixed() + "\n");
+                    Log.d("Sentiments", strBuilder.toString());
+                }
+                else
+                    Log.e(ID, "Sentiment is null for Restaurant: " + r.getBiz());
 
 
                 b.putSerializable("LeastRecommendedRestaurant-"+j,r);
@@ -282,16 +301,21 @@ public class MainActivityFragment extends Fragment {
 //            RecommendedFragment recommendedFragment = new RecommendedFragment();
   //          recommendedFragment.setArguments(b);
 
-            RecommendationFragment recommendationFragment = new RecommendationFragment();
-            recommendationFragment.setArguments(b);
+           // if(recommendationFragment == null)
+             recommendationFragment = new RecommendationFragment();
+            //else //else detach so you can set the arguments again
+           // {
+            //    getFragmentManager().beginTransaction().detach(recommendationFragment).commit();
+           // }
+            recommendationFragment.setRecommendations(b);
 
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.remove(MainActivityFragment.this);
             ft.replace(R.id.container, recommendationFragment, "Recommendation");
-            //            ft.add(R.id.fragment,recommendedFragment);
-            //  ft.hide(MainActivityFragment);
-            //        ft.hide(getFragmentManager().)
-        //    ft.addToBackStack("Recommendation");
+
+               ft.addToBackStack("Recommendation");
+               // quite important..otherwise the back button behaves weird after the second back buton press.
+               // Recommendation fragment will remain visible and will overlay the mapInputActivity
             ft.commit();
             MainActivity.appState = AppStateEnum.RECOMMENDATION_SCREEN;
 

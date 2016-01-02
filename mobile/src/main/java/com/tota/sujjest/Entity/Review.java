@@ -1,9 +1,11 @@
 package com.tota.sujjest.Entity;
 
+import java.io.Serializable;
+
 /**
  * Created by aprabhakar on 11/24/15.
  */
-public class Review {
+public class Review implements Serializable{
 
     public String getReview() {
         return review;

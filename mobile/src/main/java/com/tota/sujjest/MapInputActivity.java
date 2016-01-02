@@ -1,6 +1,8 @@
 package com.tota.sujjest;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -72,14 +74,14 @@ public class MapInputActivity extends Fragment
         implements OnMapReadyCallback, LocationListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
 
-    public static final String ID="MapInputActivity";
+    public static final String ID = "MapInputActivity";
 
     protected ArrayList<Restaurant> restaurantArrayList = null;
     protected ArrayList<Restaurant> restaurantArrayList2 = null;
     private RequestTask requestTask;
     private GoogleMap gm;
     public GoogleApiClient client;
-    Double latitude=0.0, longitude=0.0;
+    Double latitude = 0.0, longitude = 0.0;
     private LocationManager locationManager;
     private String provider;
     protected String where;
@@ -87,22 +89,22 @@ public class MapInputActivity extends Fragment
     protected MapFragment mapFragment;
     private boolean mlocationChanged;
     private Menu optionsMenu;
-
+    private Activity activity;
+    MainActivityFragment ma;
 
     public MapInputActivity() {
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        Log.d(ID,"Starting onSaveInstanceState");
+        Log.d(ID, "Starting onSaveInstanceState");
         // Save the user's current game state
-        savedInstanceState.putString("what",what);
+        savedInstanceState.putString("what", what);
         savedInstanceState.putString("where", where);
 
         // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState);
     }
-
 
 
     public void addRestaurantToMap(Restaurant restaurant) {
@@ -115,13 +117,13 @@ public class MapInputActivity extends Fragment
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
         // Inflate the menu; this adds items to the action bar if it is present.
-        Log.e(ID,"OnCreateOptionsMenu");
-       inflater.inflate(R.menu.menu_main, menu);
+        Log.e(ID, "OnCreateOptionsMenu");
+        inflater.inflate(R.menu.menu_main, menu);
         optionsMenu = menu;
+        super.onCreateOptionsMenu(menu, inflater);
 
-  //      return super.onCreateOptionsMenu(menu);
+        //      return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -144,15 +146,12 @@ public class MapInputActivity extends Fragment
         if (id == R.id.action_search) {
             CardView cardView = (CardView) getActivity().findViewById(R.id.searchCard);
             FrameLayout fragment = (FrameLayout) getActivity().findViewById(R.id.container);
-            if( cardView!= null && fragment != null )
-                if(cardView.getVisibility() == View.VISIBLE)
-                {
+            if (cardView != null && fragment != null)
+                if (cardView.getVisibility() == View.VISIBLE) {
                     //do nothing
                     cardView.setVisibility(View.GONE);
                     fragment.invalidate();
-                }
-                else
-                {
+                } else {
                     //show
                     cardView.setVisibility(View.VISIBLE);
                     fragment.invalidate();
@@ -171,18 +170,16 @@ public class MapInputActivity extends Fragment
                     .findItem(R.id.action_search);
             if (refreshItem != null) {
                 if (refreshing) {
-                    Log.e(ID,"setting refresh view");
+                    Log.e(ID, "setting refresh view");
                     refreshItem.setActionView(R.layout.actionbar_indeterminate_progress);
                 } else {
-                    Log.e(ID,"unsetting refresh view");
+                    Log.e(ID, "unsetting refresh view");
                     refreshItem.setActionView(null);
                 }
-            }
-            else
-                Log.e(ID,"refreshItem menuitem is null");
-        }
-        else
-            Log.e(ID,"optionsMenu is null");
+            } else
+                Log.e(ID, "refreshItem menuitem is null");
+        } else
+            Log.e(ID, "optionsMenu is null");
     }
 
     @Override
@@ -190,13 +187,13 @@ public class MapInputActivity extends Fragment
 
 
         super.onCreate(savedInstanceState);
-        if(savedInstanceState !=null) {
+        activity = getActivity();
+        if (savedInstanceState != null) {
             Log.d(ID, "Bundle:What: " + savedInstanceState.getString("what"));
 
             Log.d(ID, "Bundle:Where: " + savedInstanceState.getString("where"));
-        }else
-        {
-            Log.e(ID,"saved instance in OnCreate is null");
+        } else {
+            Log.e(ID, "saved instance in OnCreate is null");
         }
 
         Log.d(ID, "OnCreate Starting");
@@ -218,18 +215,18 @@ public class MapInputActivity extends Fragment
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == 999 && grantResults.length > 0)
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                initLocation();;
+        if (requestCode == 999 && grantResults.length > 0)
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                initLocation();
+        ;
 
     }
 
 
-    protected void refreshLocation()
-    {
+    protected void refreshLocation() {
         Log.d(ID, "Starting refreshLocation");
         initLocation();
-        if(mlocationChanged) //yes it did. get the list again.
+        if (mlocationChanged) //yes it did. get the list again.
         {
             gm.clear();
             setRefreshActionButtonState(true);
@@ -238,16 +235,15 @@ public class MapInputActivity extends Fragment
         }
     }
 
-    protected void initLocation()
-    {
+    protected void initLocation() {
         Geocoder geocoder;
         List<Address> addressList;
-        Double tlatitude=latitude;
-        Double tlongitude=longitude;
+        Double tlatitude = latitude;
+        Double tlongitude = longitude;
         Location location;
 
         // Get the location manager
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
 
         // Define the criteria how to select the locatioin provider -> use
         // default
@@ -260,13 +256,13 @@ public class MapInputActivity extends Fragment
         if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             String[] a = new String[2];
-            a[0]=Manifest.permission.ACCESS_FINE_LOCATION;
-            a[1]=Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(),a,999);
+            a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+            a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+            ActivityCompat.requestPermissions(getActivity(), a, 999);
             return;
         }
 
-        locationManager.requestSingleUpdate(provider,this,null);
+        locationManager.requestSingleUpdate(provider, this, null);
 
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 100, this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100, this);
@@ -275,12 +271,12 @@ public class MapInputActivity extends Fragment
 
         // Initialize the location fields
         if (location != null) {
-            Log.d(ID,"Provider " + provider + " has been selected.");
+            Log.d(ID, "Provider " + provider + " has been selected.");
             onLocationChanged(location);
-            tlatitude= (location.getLatitude());
+            tlatitude = (location.getLatitude());
             tlongitude = (location.getLongitude());
 
-            geocoder = new Geocoder(getActivity());
+            geocoder = new Geocoder(activity);
 
             try {
                 addressList = geocoder.getFromLocation(tlatitude, tlongitude, 1);
@@ -288,16 +284,13 @@ public class MapInputActivity extends Fragment
                     if (addressList.size() > 0) {
                         Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
                         Address address = addressList.get(0);
-                        if (address!=null)
-                        {
-                            String city_state = address.getLocality()+","+address.getAdminArea();
+                        if (address != null) {
+                            String city_state = address.getLocality() + "," + address.getAdminArea();
                             where = city_state;
 
-                            Log.d(ID,"Found that we are here: " + where);
+                            Log.d(ID, "Found that we are here: " + where);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         Log.e(ID, "GeoCoder: Unable to resolve location into a valid address. No address entries returned from Google Places");
 
                     }
@@ -306,10 +299,13 @@ public class MapInputActivity extends Fragment
                     Log.e(ID, "GeoCoder: Resolving location into Address using Google failed - geocoder.getLocation returned null");
 
                 }
-            }
-            catch (IOException e)
-            {
-                Log.e(ID,"Exception thrown while geoCoding current location: "+ e.toString());
+            } catch (IOException e) {
+                Log.e(ID, "Exception thrown while geoCoding current location: " + e.toString());
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+                alertDialogBuilder.setTitle("Unable to access source websites");
+                alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
 
 
@@ -317,142 +313,147 @@ public class MapInputActivity extends Fragment
             Log.e(ID, "getLastKnownLocation returned null location");
 
             //if user entered a city,state then go there.
-            if(where!=null && where.length() > 0 )
+            if (where != null && where.length() > 0)
                 initLocationFromName(where);
             else {
-             //no option, keep it at 0.0 0.0
+                //no option, keep it at 0.0 0.0
                 tlatitude = 0.0;
                 tlongitude = 0.0;
             }
         }
 
 //did location of interest change?
-        if( (latitude !=0.0 && longitude != 0.0) && (tlatitude!=latitude || tlongitude!=longitude))
-        {
-            float[] results= new float[1];
+        if ((latitude != 0.0 && longitude != 0.0) && (tlatitude != latitude || tlongitude != longitude)) {
+            float[] results = new float[1];
             Location.distanceBetween(latitude, longitude, tlatitude, tlongitude, results);
-            if(results.length>0)
-                if(results[0] > 1609) //more than a mile
+            if (results.length > 0)
+                if (results[0] > 1609) //more than a mile
                 {
-                    Log.d(ID,"Location delta : " + results[0] +". Greater than 1609 so location changed");
+                    Log.d(ID, "Location delta : " + results[0] + ". Greater than 1609 so location changed");
                     latitude = tlatitude;
                     longitude = tlongitude;
                     mlocationChanged = true;
-                }
-                else
-                    Log.d(ID,"Location delta : " + results[0] +". Less than 1609 so location changed");
+                } else
+                    Log.d(ID, "Location delta : " + results[0] + ". Less than 1609 so location changed");
             else
-                Log.d(ID,"distanceBetween did not return an array with length > 0");
+                Log.d(ID, "distanceBetween did not return an array with length > 0");
 
+        } else {
+            if ((latitude == 0.0 && longitude == 0.0)) {
+                //first time so never initialized. Just set it to the latest ( could be zero again).
+                Log.d(ID, "Looks like an init situation..setting to initial");
+                Log.d(ID, "tLatitude: " + tlatitude
+                        +
+                        " tLongitude: " + tlongitude +
+                        "latitude: " + latitude +
+                        " longitude: " + longitude);
+                latitude = tlatitude;
+                longitude = tlongitude;
+                mlocationChanged = true;
+            } else {
+                Log.d(ID, "tLatitude: " + tlatitude
+                        +
+                        " tLongitude: " + tlongitude +
+                        "latitude: " + latitude +
+                        " longitude: " + longitude);
+
+                mlocationChanged = false;
+            }
         }
-        else {
-            Log.d(ID,"tLatitude: " + tlatitude
-                    +
-                    " tLongitude: "+tlongitude +
-                    "latitude: " + latitude+
-                    " longitude: " + longitude);
 
-            mlocationChanged = false;
-        }
-
-        Log.i(ID,"latitude "+ latitude.toString());
-        Log.i(ID,"longtitude " + longitude.toString());
+        Log.i(ID, "latitude " + latitude.toString());
+        Log.i(ID, "longtitude " + longitude.toString());
     }
 
-    protected void initLocationFromName(String city_state)
-    {
+    protected void initLocationFromName(String city_state) {
         Geocoder geocoder;
         List<Address> addressList;
-        Double tlongitude=longitude;
+        Double tlongitude = longitude;
         Double tlatitude = latitude;
         // Get the location manager
-        mlocationChanged=false;
-            geocoder = new Geocoder(getActivity());
+        mlocationChanged = false;
+        geocoder = new Geocoder(getActivity());
 
-            try {
-                addressList = geocoder.getFromLocationName(city_state,1);
-          //      addressList = geocoder.getFromLocation(latitude, longitude, 1);
-                if (addressList != null) {
-                    if (addressList.size() > 0) {
-                        Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
-                        Address address = addressList.get(0);
-                        if (address!=null)
-                        {
-                             city_state = address.getLocality()+","+address.getAdminArea();
-                            where = city_state;
-                            if(address.hasLongitude())
+        try {
+            addressList = geocoder.getFromLocationName(city_state, 1);
+            //      addressList = geocoder.getFromLocation(latitude, longitude, 1);
+            if (addressList != null) {
+                if (addressList.size() > 0) {
+                    Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
+                    Address address = addressList.get(0);
+                    if (address != null) {
+                        city_state = address.getLocality() + "," + address.getAdminArea();
+                        where = city_state;
+                        if (address.hasLongitude())
                             tlongitude = address.getLongitude();
 
-                            if(address.hasLatitude())
+                        if (address.hasLatitude())
                             tlatitude = address.getLatitude();
-                            if(tlatitude!=latitude || tlongitude!=longitude)
-                            {
-                                float[] results=new float[1];
-                                Location.distanceBetween(latitude, longitude, tlatitude, tlongitude, results);
-                                if(results.length>0)
-                                    if(results[0] > 1609) //more than a mile
-                                    {
-                                        Log.d(ID,"Location delta : " + results[0] +". Greater than 1609 so location changed");
-                                        latitude = tlatitude;
-                                        longitude = tlongitude;
-                                        mlocationChanged = true;
-                                    }
-                                    else
-                                        Log.d(ID,"Location delta : " + results[0] +". Less than 1609 so location changed");
-                                else
-                                        Log.d(ID,"distanceBetween did not return an array with length > 0");
+                        if (tlatitude != latitude || tlongitude != longitude) {
+                            float[] results = new float[1];
+                            Location.distanceBetween(latitude, longitude, tlatitude, tlongitude, results);
+                            if (results.length > 0)
+                                if (results[0] > 1609) //more than a mile
+                                {
+                                    Log.d(ID, "Location delta : " + results[0] + ". Greater than 1609 so location changed");
+                                    latitude = tlatitude;
+                                    longitude = tlongitude;
+                                    mlocationChanged = true;
+                                } else
+                                    Log.d(ID, "Location delta : " + results[0] + ". Less than 1609 so location changed");
+                            else
+                                Log.d(ID, "distanceBetween did not return an array with length > 0");
 
-                            }
-                            else {
-                                Log.d(ID,"tLatitude: " + tlatitude
-                                +
-                                " tLongitude: "+tlongitude +
-                                        "latitude: " + latitude+
-                                " longitude: " + longitude);
+                        } else {
+                            Log.d(ID, "tLatitude: " + tlatitude
+                                    +
+                                    " tLongitude: " + tlongitude +
+                                    "latitude: " + latitude +
+                                    " longitude: " + longitude);
 
-                                mlocationChanged = false;
-                            }
-                            Log.d(ID,"Found that we are here: " + where);
-                            if(gm != null)
-                                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+                            mlocationChanged = false;
                         }
+                        Log.d(ID, "Found that we are here: " + where);
+                        if (gm != null)
+                            gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
                     }
-                    else
-                    {
-                        Log.e(ID, "GeoCoder: Unable to resolve location into a valid address. No address entries returned from Google Places");
-
-                    }
-
                 } else {
-                    Log.e(ID, "GeoCoder: Resolving location into Address using Google failed - geocoder.getLocation returned null");
+                    Log.e(ID, "GeoCoder: Unable to resolve location into a valid address. No address entries returned from Google Places");
 
                 }
+
+            } else {
+                Log.e(ID, "GeoCoder: Resolving location into Address using Google failed - geocoder.getLocation returned null");
+
             }
-            catch (IOException e)
-            {
-                Log.e(ID,"Exception thrown while geoCoding current location: "+ e.toString());
-            }
+        } catch (IOException e) {
+            Log.e(ID, "Exception thrown while geoCoding current location: " + e.toString());
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+            alertDialogBuilder.setTitle("Unable to access source websites");
+            alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
 
 
-
-        Log.i(ID,"latitude "+ latitude.toString());
-        Log.i(ID,"longtitude " + longitude.toString());
+        Log.i(ID, "latitude " + latitude.toString());
+        Log.i(ID, "longtitude " + longitude.toString());
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(ID,"onLocationChanged");
-        latitude= (location.getLatitude());
+        Log.d(ID, "onLocationChanged");
+        latitude = (location.getLatitude());
         longitude = (location.getLongitude());
 
-       // if(gm != null)
-      //  gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+        // if(gm != null)
+        //  gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
 
     }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-       Log.d(ID,"onStatusChanged");
+        Log.d(ID, "onStatusChanged");
         initLocation();
     }
 
@@ -464,9 +465,9 @@ public class MapInputActivity extends Fragment
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             String[] a = new String[2];
-            a[0]=Manifest.permission.ACCESS_FINE_LOCATION;
-            a[1]=Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(),a,999);
+            a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+            a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+            ActivityCompat.requestPermissions(getActivity(), a, 999);
             return;
         }
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -475,20 +476,24 @@ public class MapInputActivity extends Fragment
         //location stuff is all set
         //go ahead and resume the mapFragment;
 
-        mapFragment = new MapFragment();
+        //Not doing this does not render the fragment when coming back via  aback button pressed
+/*
+        if(mapFragment==null)
+            mapFragment = MapFragment.newInstance();
 
 
         FragmentTransaction ft;
-        ft = this.getFragmentManager().beginTransaction();
+        ft = getChildFragmentManager().beginTransaction();
 
         ft.replace(R.id.map, mapFragment, "map");
-        //  ft.addToBackStack(mapFragment.getClass().getSimpleName());
+        // ft.addToBackStack(mapFragment.getClass().getSimpleName());
         ft.commit();
 
         mapFragment.getMapAsync(this);
-      // mapFragment.onResume();
-      //  gm = mapFragment.getMap();
-//        mapFragment.getMapAsync(this);
+*/
+        Log.d(ID, "backstack count at end of onResume: " + getFragmentManager().getBackStackEntryCount());
+        Log.d(ID, "OnResume Done");
+
     }
 
     /* Remove the locationlistener updates when Activity is paused */
@@ -504,9 +509,9 @@ public class MapInputActivity extends Fragment
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
             String[] a = new String[2];
-            a[0]=Manifest.permission.ACCESS_FINE_LOCATION;
-            a[1]=Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(),a,999);
+            a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+            a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+            ActivityCompat.requestPermissions(getActivity(), a, 999);
             return;
         }
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -514,57 +519,54 @@ public class MapInputActivity extends Fragment
     }
 
 
-
     @Override
     public void onProviderEnabled(String provider) {
-        Toast.makeText(getActivity(), "Location is now available through: " + provider,
-                Toast.LENGTH_SHORT).show();
-
+        Log.i(ID, "Location is NOW available through: " + provider);
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        Toast.makeText(getActivity(), "Location is now available through: " + provider,
-                Toast.LENGTH_SHORT).show();
+        Log.i(ID, "Location is NO LONGER available through: " + provider);
     }
-
-
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View map_input = inflater.inflate(R.layout.fragment_map_input, container,false);
+        Log.d(ID, "onCreateView Starting");
+
+        setHasOptionsMenu(true);
+
+        View map_input = inflater.inflate(R.layout.fragment_map_input, container, false);
 
 
         final ClearableAutoCompleteTextView findWhereTextView = (ClearableAutoCompleteTextView) map_input.findViewById(R.id.findWhereTextView);
         final ClearableAutoCompleteTextView findWhatTextView = (ClearableAutoCompleteTextView) map_input.findViewById(R.id.findWhatTextView);
 
-        if(mapFragment==null) {
-            mapFragment = new MapFragment();
+        // if(mapFragment==null) {
+        mapFragment = MapFragment.newInstance();
+        // }
+
+        FragmentTransaction ft;
+        ft = getChildFragmentManager().beginTransaction();
+
+        ft.replace(R.id.map, mapFragment, "map");
+        //ft.addToBackStack(mapFragment.getClass().getSimpleName());
+        ft.commit();
+        //          getChildFragmentManager().executePendingTransactions();
+
+        mapFragment.getMapAsync(this);
 
 
-            FragmentTransaction ft;
-            ft = this.getFragmentManager().beginTransaction();
-
-            ft.replace(R.id.map, mapFragment, "map");
-            //  ft.addToBackStack(mapFragment.getClass().getSimpleName());
-            ft.commit();
-
-            mapFragment.getMapAsync(this);
-        }
-
-       // ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), android.R.layout.simple_selectable_list_item,YelpProcessor.categories);
+        // ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), android.R.layout.simple_selectable_list_item,YelpProcessor.categories);
         //findWhatTextView.setAdapter(arrayAdapter);
-         CuisineArrayAdapter cuisineArrayAdapter = new CuisineArrayAdapter(getActivity().getApplicationContext(),R.layout.cuiseine_type_ahead_item,YelpProcessor.categories);
+        CuisineArrayAdapter cuisineArrayAdapter = new CuisineArrayAdapter(getActivity().getApplicationContext(), R.layout.cuiseine_type_ahead_item, YelpProcessor.categories);
         findWhatTextView.setAdapter(cuisineArrayAdapter);
         findWhatTextView.setThreshold(1);
 
 
 //        where = findWhereTextView.getText().toString();
-
-
 
 
         findWhatTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -583,7 +585,7 @@ public class MapInputActivity extends Fragment
                 if (what.length() > 0) {
                     if (gm != null)
                         gm.clear();
-                   setRefreshActionButtonState(true);
+                    setRefreshActionButtonState(true);
 
                     requestTask = new RequestTask();
                     requestTask.execute();
@@ -625,8 +627,9 @@ public class MapInputActivity extends Fragment
                     //hide hte keyboard
                     InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
-                    //if they entered something useful then attempt to resolve.
-                    if (what !=null ) {
+                    //if th
+                    //ey entered something useful then attempt to resolve.
+                    if (what != null) {
 
                         if (gm != null)
                             gm.clear();
@@ -684,12 +687,12 @@ public class MapInputActivity extends Fragment
                     //if they entered something useful then attempt to resolve.
                     if (where.length() > 0) {
                         initLocationFromName(where);
-                      //  ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
-                      //  if(whereTextView != null)
-                            v.setText(where);
-                      //  else
+                        //  ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
+                        //  if(whereTextView != null)
+                        v.setText(where);
+                        //  else
                         //    Log.e(ID,"WhereTextView is null");
-                        if(mlocationChanged) {
+                        if (mlocationChanged) {
                             if (gm != null)
                                 gm.clear();
                             setRefreshActionButtonState(true);
@@ -721,11 +724,9 @@ public class MapInputActivity extends Fragment
             @Override
             public void afterTextChanged(Editable s) {
 
-                if(s.length() >0 )
-                {
+                if (s.length() > 0) {
                     findWhereTextView.showClearButton();
-                }
-                else
+                } else
                     findWhereTextView.hideClearButton();
 
 
@@ -735,65 +736,62 @@ public class MapInputActivity extends Fragment
         });
 
 
-
-
         FloatingActionButton fab = (FloatingActionButton) map_input.findViewById(R.id.fab);
         FloatingActionButton fab2 = (FloatingActionButton) map_input.findViewById(R.id.fab2);
         fab2.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        refreshLocation();
-                                        ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
-                                        if(whereTextView != null)
-                                        whereTextView.setText(where);
-                                        else
-                                        Log.e(ID,"WhereTextView is null");
+            @Override
+            public void onClick(View view) {
+                refreshLocation();
+                ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
+                if (whereTextView != null)
+                    whereTextView.setText(where);
+                else
+                    Log.e(ID, "WhereTextView is null");
 
-                                        if (gm != null)
-                                                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+                if (gm != null)
+                    gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
 
 
-                                    }
-                                });
+            }
+        });
 
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-               AutoCompleteTextView t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhatTextView);
-                Log.d(ID,t1.getText().toString());
-               AutoCompleteTextView t2 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhereTextView);
-               Log.d(ID, t2.getText().toString());
+                AutoCompleteTextView t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhatTextView);
+                //  Log.d(ID,t1.getText().toString());
+                AutoCompleteTextView t2 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhereTextView);
+                //  Log.d(ID, t2.getText().toString());
 
-                MainActivityFragment ma = new MainActivityFragment();
+              //  if (ma == null)
+                    ma = new MainActivityFragment();
 
                 Bundle b = new Bundle();
-                b.putSerializable("what",what);
+                b.putSerializable("what", what);
                 b.putSerializable("where", where);
                 ma.setArguments(b);
 
-                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                ft.remove(MapInputActivity.this);
-                ft.replace(R.id.container, ma, "main");
-                ft.addToBackStack(this.getClass().getSimpleName());
 
-              //  ft.addToBackStack("main");
-                ft.commit();
                 MainActivity.appState = AppStateEnum.REREIVING_REVIEWS_SCREEN;
 
-                Snackbar.make(view, "Searching...", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                   ft.remove(MapInputActivity.this);
+                ft.replace(R.id.container, ma, "main"); //last change was .replace
+                ft.addToBackStack("MapInput");
+
+                //  ft.addToBackStack("main");
+                ft.commit();
 
 
             }
         });
         Log.d(ID, "Restoring saved state:");
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             what = savedInstanceState.getString("what");
             where = savedInstanceState.getString("where");
-        }
-        else {
+        } else {
             findWhereTextView.setText(where);
             what = findWhatTextView.getText().toString();
 
@@ -803,22 +801,19 @@ public class MapInputActivity extends Fragment
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-Log.d(ID,"onMapReady Starting");
+        Log.d(ID, "onMapReady Starting");
         gm = googleMap;
-       // initLocation();
+        // initLocation();
         gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
 
 
         //    gm.setMyLocationEnabled(true);
-    //    gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(gm.getMyLocation().getLatitude(), gm.getMyLocation().getLongitude()),15));
+        //    gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(gm.getMyLocation().getLatitude(), gm.getMyLocation().getLongitude()),15));
 
         setRefreshActionButtonState(true);
         requestTask = new RequestTask();
         requestTask.execute();
     }
-
-
-
 
 
     private class RequestTask extends AsyncTask<String, Restaurant, ArrayList<Restaurant>> {
@@ -830,7 +825,7 @@ Log.d(ID,"onMapReady Starting");
         protected ArrayList<Restaurant> doInBackground(String... uri) {
             //Get list of restaurants from Yelp.
 
-            Geocoder geocoder=null;
+            Geocoder geocoder = null;
             try {
 
 
@@ -838,39 +833,50 @@ Log.d(ID,"onMapReady Starting");
                 yelpProcessor.setDesc(what);
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
                 //next page
-              restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
-               restaurantArrayList.addAll(restaurantArrayList2);
+                restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+                 restaurantArrayList.addAll(restaurantArrayList2);
                 //  MainActivity.restaurantArrayList = restaurantArrayList;
 
-                geocoder = new Geocoder(getActivity());
-                for(Restaurant r: restaurantArrayList )
-                {
+                try {
+                    geocoder = new Geocoder(getActivity());
+                    for (Restaurant r : restaurantArrayList) {
 
-                    List<Address> addressList;
+                        List<Address> addressList;
 
 
-                    addressList = geocoder.getFromLocationName(r.getAddress(),1);
-                    if(addressList!=null)
-                    {
-                        if(addressList.size() >0) {
-                            Log.d(ID,"Geocoder Address: " + addressList.get(0).toString());
-                            r.setGoogleAddress(addressList.get(0));
-                            publishProgress(r);
+                        addressList = geocoder.getFromLocationName(r.getAddress(), 1);
+                        if (addressList != null) {
+                            if (addressList.size() > 0) {
+                                Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
+                                r.setGoogleAddress(addressList.get(0));
+                                publishProgress(r);
+                            }
+
+                        } else {
+                            Log.e(ID, "GeoCoder Unable to access geolocation");
+                            r.setGoogleAddress(null);
                         }
 
                     }
-                    else
-                    {
-                        Log.e(ID, "GeoCoder Unable to access geolocation");
-                        r.setGoogleAddress(null);
-                    }
-
+                } catch (Exception e) {
+                    Log.e(ID, "Exception geodcoding: " + e.toString());
+                    //Log.e("Error", e.toString());
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+                    alertDialogBuilder.setTitle("Unable to access source websites");
+                    alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
                 }
-
 
             } catch (IOException e) {
                 Log.e(ID, "Exception retrieving Yelp.Com : " + e.toString());
                 //return "Error: IOExeption retrieving restaurants from Yelp";
+                //Log.e("Error", e.toString());
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+                alertDialogBuilder.setTitle("Unable to access source websites");
+                alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. " + e.getMessage());
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
 
             return restaurantArrayList;
@@ -881,18 +887,18 @@ Log.d(ID,"onMapReady Starting");
         protected void onProgressUpdate(Restaurant... values) {
             super.onProgressUpdate(values);
 
-               // MapFragment m = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-               // GoogleMap gm = m.getMap();
-            if(gm!=null &&
-                    values.length>0 &&
-                    values[0]!=null &&
-                    values[0].getGoogleAddress() !=null )
-            gm.addMarker(new MarkerOptions()
-                            .position(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()))
-                            .title(values[0].getBiz())
-                            .snippet(values[0].getAddress() + "\n\r" + values[0].getPhone())
-            );
-          //  gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()), 10));
+            // MapFragment m = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+            // GoogleMap gm = m.getMap();
+            if (gm != null &&
+                    values.length > 0 &&
+                    values[0] != null &&
+                    values[0].getGoogleAddress() != null)
+                gm.addMarker(new MarkerOptions()
+                                .position(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()))
+                                .title(values[0].getBiz())
+                                .snippet(values[0].getAddress() + "\n\r" + values[0].getPhone())
+                );
+            //  gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()), 10));
         }
 
         @Override
@@ -900,13 +906,13 @@ Log.d(ID,"onMapReady Starting");
             super.onPostExecute(restaurantArrayList);
 
 
-            if(gm!=null && restaurantArrayList != null &&
+            if (gm != null && restaurantArrayList != null &&
                     restaurantArrayList.size() > 0 &&
-                    restaurantArrayList.get(0)!=null &&
-                    restaurantArrayList.get(0).getGoogleAddress() !=null )
-            gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getGoogleAddress().getLatitude(), restaurantArrayList.get(0).getGoogleAddress().getLongitude()), 11));
+                    restaurantArrayList.get(0) != null &&
+                    restaurantArrayList.get(0).getGoogleAddress() != null)
+                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getGoogleAddress().getLatitude(), restaurantArrayList.get(0).getGoogleAddress().getLongitude()), 11));
 
-           setRefreshActionButtonState(false);
+            setRefreshActionButtonState(false);
 
         }
 
