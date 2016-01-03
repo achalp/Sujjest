@@ -4,6 +4,7 @@ package com.tota.sujjest;
  */
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +21,8 @@ import com.squareup.picasso.Picasso;
 import com.tota.sujjest.Entity.Restaurant;
 
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class LeastRecommendedFragment extends Fragment {
 
@@ -57,6 +60,8 @@ public class LeastRecommendedFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.e(ID, "Item Clicked at position: " + position + " with Id= " + id);
                 Log.e(ID, "Item is: " + mListView.getItemAtPosition(position));
+                String uriString = "http://yelp.com/biz/" + ((Restaurant)mListView.getItemAtPosition(position)).getBiz_key();
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uriString)));
             }
 
 
@@ -176,10 +181,14 @@ public class LeastRecommendedFragment extends Fragment {
         Restaurant r = (Restaurant)args.get("LeastRecommendedRestaurant-1");
         r2 = (Restaurant)args.get("LeastRecommendedRestaurant-2");
         r3 = (Restaurant)args.get("LeastRecommendedRestaurant-3");
-        mRestaurantArray = new Restaurant[3];
-        mRestaurantArray[0] = r;
-        mRestaurantArray[1] = r2;
-        mRestaurantArray[2]=r3;
+       // mRestaurantArray = new Restaurant[3];
+       // mRestaurantArray[0] = r;
+       // mRestaurantArray[1] = r2;
+       // mRestaurantArray[2]=r3;
+        ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
+       // Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
+        mRestaurantArray = new Restaurant[restaurantArrayList.size()];
+        restaurantArrayList.toArray(mRestaurantArray);
 
 
     }

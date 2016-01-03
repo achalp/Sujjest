@@ -143,7 +143,28 @@ public class Restaurant implements Serializable {
         }
     };
 
+    public static Comparator<Restaurant> RestScoreReverseComparator = new Comparator<Restaurant>() {
+        @Override
+        public int compare(Restaurant restaurant, Restaurant t1) {
+            Sentiment s1, s2;
+            Double d1, d2;
+            if (t1 != null && restaurant != null) {
+                s1 = restaurant.getSentiment();
+                s2 = t1.getSentiment();
+                if(s1 !=null && s2 !=null) {
+                    d1 = Double.parseDouble(s1.getScore());
+                    d2 = Double.parseDouble(s2.getScore());
 
+                    if (d1 < d2) return 1;
+                    if (d1 > d2) return -1;
+                    else return 0;
+
+                }
+
+            }
+            return 0;
+        }
+    };
 
 
 }

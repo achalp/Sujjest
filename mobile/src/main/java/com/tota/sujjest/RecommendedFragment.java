@@ -19,8 +19,11 @@ import android.widget.TextView;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import com.tota.sujjest.Entity.Restaurant;
+import com.tota.sujjest.Entity.Sentiment;
 
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class RecommendedFragment extends Fragment {
 
@@ -179,11 +182,34 @@ public class RecommendedFragment extends Fragment {
         Restaurant r = (Restaurant)args.get("MostRecommendedRestaurant-1");
          r2 = (Restaurant)args.get("MostRecommendedRestaurant-2");
         r3 = (Restaurant)args.get("MostRecommendedRestaurant-3");
-        mRestaurantArray = new Restaurant[3];
-        mRestaurantArray[0] = r;
-        mRestaurantArray[1] = r2;
-        mRestaurantArray[2]=r3;
+        ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
+     //   Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
+        mRestaurantArray = new Restaurant[restaurantArrayList.size()];
+        for(int i=restaurantArrayList.size()-1,j=0;i>=0 ;i--,j++)
+        mRestaurantArray[j] = restaurantArrayList.get(i);
 
+      //  mRestaurantArray[0] = r;
+     //   mRestaurantArray[1] = r2;
+     //   mRestaurantArray[2]=r3;
+/*
+        //get TOP 5
+        for(int i=restaurantArrayList.size()-1,j=1;i>=0;i--,j++)
+        {
+            r = restaurantArrayList.get(i);
+            Sentiment sentiment =  r.getSentiment();
 
+            StringBuilder strBuilder = new StringBuilder();
+            if(sentiment != null) {
+                strBuilder.append(r.getBiz() + " "
+                        + sentiment.getScore() + " "
+                        + sentiment.getSentiment() + " "
+                        + sentiment.getMixed() + "\n");
+                Log.d("Sentiments", strBuilder.toString());
+            }
+            else
+                Log.e(ID,"Sentiment is null for Restaurant: " +r.getBiz());
+
+        }
+        */
     }
 }

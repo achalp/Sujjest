@@ -254,28 +254,11 @@ public class MainActivityFragment extends Fragment {
             Collections.sort(restaurantArrayList, Restaurant.RestScoreComparator);
 //            Log.d("Last",restaurantArrayList.get(restaurantArrayList.size()-1).getSentiment().getScore());
             Bundle b = new Bundle();
-            //get TOP 3
-            for(int i=restaurantArrayList.size()-1,j=1;i>=0;i--,j++)
-            {
-                r = restaurantArrayList.get(i);
-                Sentiment sentiment =  r.getSentiment();
+            b.putSerializable("RestaurantListSorted",restaurantArrayList);
 
-                StringBuilder strBuilder = new StringBuilder();
-                if(sentiment != null) {
-                    strBuilder.append(r.getBiz() + " "
-                            + sentiment.getScore() + " "
-                            + sentiment.getSentiment() + " "
-                            + sentiment.getMixed() + "\n");
-                    Log.d("Sentiments", strBuilder.toString());
-                }
-                else
-                    Log.e(ID,"Sentiment is null for Restaurant: " +r.getBiz());
 
-                        b.putSerializable("MostRecommendedRestaurant-" + j, r);
 
-            }
-
-            //get Bottom 3
+            //get Bottom 5
             for(int i=0,j=1;i<restaurantArrayList.size();i++,j++)
             {
                 r = restaurantArrayList.get(i);
