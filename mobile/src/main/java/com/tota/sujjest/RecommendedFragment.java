@@ -184,8 +184,8 @@ public class RecommendedFragment extends Fragment {
         r3 = (Restaurant)args.get("MostRecommendedRestaurant-3");
         ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
      //   Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
-        mRestaurantArray = new Restaurant[restaurantArrayList.size()];
-        for(int i=restaurantArrayList.size()-1,j=0;i>=0 ;i--,j++)
+        mRestaurantArray = new Restaurant[Options.ShowN];
+        for(int i=restaurantArrayList.size()-1, j=0;i>=0 && j< Options.ShowN ;i--,j++)
         mRestaurantArray[j] = restaurantArrayList.get(i);
 
       //  mRestaurantArray[0] = r;

@@ -146,8 +146,9 @@ public class YelpProcessor {
     private final static String CITY="";
     private final static String STATE="" ;
     private final static String SORTBY="review_count";
-    private final static String CUISINE = " ";
+    private final static String CUISINE = "";
     private final static String DESC = "Restaurants";
+    private final static String ATTRS = "";
 
     private String city;
     private String state;
@@ -161,16 +162,49 @@ public class YelpProcessor {
         sb.append(YELP_LIST_OF_RESTAURANTS_END_POINT)
                 .append("?find_desc=")
                 .append(desc)
-                .append("&cflt=")
+                .append("&cflt=food")
                 .append(cuisine)
                 .append("&find_loc=")
-                .append(city)
+                .append(city.trim())
              //   .append(",")
                // .append(state)
                 .append("&sortby=")
                 .append(sortBy);
 
-        return sb.toString();
+
+        String attrs = "";
+        if(Options.Price$) {
+            if (attrs.length() > 0)
+                attrs = attrs + ",RestaurantsPriceRange2.1";
+            else
+                attrs = attrs + "RestaurantsPriceRange2.1";
+        }
+
+        if(Options.Price$$) {
+            if(attrs.length() >0 )
+            attrs = attrs + ",RestaurantsPriceRange2.2";
+            else
+                attrs = attrs + "RestaurantsPriceRange2.2";
+        }
+            if(Options.Price$$$) {
+                if(attrs.length() >0 )
+                    attrs = attrs + ",RestaurantsPriceRange2.3";
+                else
+                    attrs = attrs + "RestaurantsPriceRange2.3";
+            }
+            if(Options.Price$$$$) {
+                if(attrs.length() >0 )
+                    attrs = attrs + ",RestaurantsPriceRange2.4";
+                else
+                    attrs = attrs + "RestaurantsPriceRange2.4";
+            }
+
+if(attrs.length() > 0)
+    sb.append("&attrs=").append(attrs);
+
+        String returnval = sb.toString();
+        Log.d(ID,"Yelp URL: " + returnval);
+        return returnval;
 
     }
 
@@ -180,7 +214,7 @@ public class YelpProcessor {
         sortBy=SORTBY;
         cuisine=CUISINE;
         desc=DESC;
-        Log.d(this.ID,"YELP SEARCH URL: "+ this.formURL());
+        Log.d(this.ID,"Constructor: Initial  - YELP SEARCH URL: "+ this.formURL());
 
     }
 

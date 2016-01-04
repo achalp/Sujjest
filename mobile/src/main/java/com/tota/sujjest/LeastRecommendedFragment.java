@@ -187,8 +187,9 @@ public class LeastRecommendedFragment extends Fragment {
        // mRestaurantArray[2]=r3;
         ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
        // Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
-        mRestaurantArray = new Restaurant[restaurantArrayList.size()];
-        restaurantArrayList.toArray(mRestaurantArray);
+        mRestaurantArray = new Restaurant[Options.ShowN];
+        for(int i=0, j=0;i<=restaurantArrayList.size()-1 && j< Options.ShowN ;i++,j++)
+            mRestaurantArray[j] = restaurantArrayList.get(i);
 
 
     }

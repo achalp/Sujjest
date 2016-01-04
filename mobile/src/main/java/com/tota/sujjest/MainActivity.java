@@ -34,8 +34,7 @@ import com.tota.sujjest.Entity.Restaurant;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -45,6 +44,16 @@ public class MainActivity extends AppCompatActivity
         inflater.inflate(R.menu.menu_home, menu);
         optionsMenu = menu;
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(Options.ShowN == 5)
+        menu.findItem(R.id.action_showN5).setChecked(true);
+        else
+            menu.findItem(R.id.action_showN5).setChecked(false);
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -59,11 +68,25 @@ public class MainActivity extends AppCompatActivity
             return true;
         }*/
 
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_showN5) {
+            if (item.isChecked()) {
+                Options.ShowN = 3;
+                item.setChecked(false);
+            } else {
+                Options.ShowN = 5;
+                item.setChecked(true);
+
+            }
+
+
+        }
+
+
+        if (id == R.id.action_about) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setTitle("About");
-            alertDialogBuilder.setMessage("Sujjest helps you decided on the best restarant options and importantly, advises you on choices that others haven't had a good experience with");
-            alertDialogBuilder.setPositiveButton("Dismiss",null);
+            alertDialogBuilder.setMessage("Sujjest helps you decided on the best restaurant options quickly by analyzing user reviews to determine how others real experience was. Saving you precious time manually reading through scores of reviews. \n It even advises you on choices that others haven't had a good experience with");
+            alertDialogBuilder.setPositiveButton("Dismiss", null);
             AlertDialog alertDialog = alertDialogBuilder.create();
             alertDialog.show();
             return true;
@@ -72,9 +95,9 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public static AppStateEnum   appState = AppStateEnum.HOME_SCREEN;
+    public static AppStateEnum appState = AppStateEnum.HOME_SCREEN;
 
-    public static final String ID ="MainActivity";
+    public static final String ID = "MainActivity";
     public static ArrayList<Restaurant> restaurantArrayList = null;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -102,7 +125,7 @@ public class MainActivity extends AppCompatActivity
 
         Log.d(ID, "MainActivity; OnCreate");
 
-            appState = AppStateEnum.MAPVIEW_SCREEN;
+        appState = AppStateEnum.MAPVIEW_SCREEN;
 
         getFragmentManager().addOnBackStackChangedListener(
                 new FragmentManager.OnBackStackChangedListener() {
@@ -152,20 +175,14 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-
-
-
-
     @Override
     public void onBackPressed() {
 
-      Log.d(ID, "Back button Pressed");
+        Log.d(ID, "Back button Pressed");
         Log.d(ID, "Backstack count: " + getFragmentManager().getBackStackEntryCount());
 
         // set the next state
-        switch (appState)
-        {
+        switch (appState) {
             case RECOMMENDATION_SCREEN:
             case REREIVING_REVIEWS_SCREEN:
                 appState = AppStateEnum.MAPVIEW_SCREEN;
@@ -177,9 +194,9 @@ public class MainActivity extends AppCompatActivity
                 appState = AppStateEnum.HOME_SCREEN;
         }
 
-                if(getFragmentManager().getBackStackEntryCount() != 0) {
+        if (getFragmentManager().getBackStackEntryCount() != 0) {
 
-                    Log.d(ID, "about to popstack");
+            Log.d(ID, "about to popstack");
 /*
                     MapInputActivity mapInputActivity = new MapInputActivity();
                     m_mapInputActivity = mapInputActivity;
@@ -192,13 +209,12 @@ public class MainActivity extends AppCompatActivity
 
                     ft.commit();*/
 
-                getFragmentManager().popBackStack("MapInput",FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                }
-                  else
-                      super.onBackPressed();
+            getFragmentManager().popBackStack("MapInput", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        } else
+            super.onBackPressed();
 
 
-        }
+    }
 
 
     @Override
@@ -220,7 +236,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(ID,"onPause");
+        Log.d(ID, "onPause");
 
     }
 

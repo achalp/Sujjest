@@ -143,6 +143,52 @@ public class MapInputActivity extends Fragment
             return true;
         }*/
 
+        if (id == R.id.action_price$) {
+            if (item.isChecked()) {
+                Options.Price$ = false;
+                item.setChecked(false);
+            } else {
+                Options.Price$ = true;
+                item.setChecked(true);
+
+            }
+        }
+        if (id == R.id.action_price$$) {
+            if (item.isChecked()) {
+                Options.Price$$ = false;
+                item.setChecked(false);
+            } else {
+                Options.Price$$ = true;
+                item.setChecked(true);
+
+            }
+        }
+        if (id == R.id.action_price$$$) {
+            if (item.isChecked()) {
+                Options.Price$$$ = false;
+                item.setChecked(false);
+            } else {
+                Options.Price$$$ = true;
+                item.setChecked(true);
+
+            }
+        }
+        if (id == R.id.action_price$$$$) {
+            if (item.isChecked()) {
+                Options.Price$$$$ = false;
+                item.setChecked(false);
+            } else {
+                Options.Price$$$$ = true;
+                item.setChecked(true);
+
+            }
+        }
+
+        if ((id == R.id.action_price$) || (id == R.id.action_price$$) || (id == R.id.action_price$$$) || (id == R.id.action_price$$$$)) {
+            refreshResults();
+            return true;
+        }
+
         if (id == R.id.action_search) {
             CardView cardView = (CardView) getActivity().findViewById(R.id.searchCard);
             FrameLayout fragment = (FrameLayout) getActivity().findViewById(R.id.container);
@@ -222,6 +268,20 @@ public class MapInputActivity extends Fragment
 
     }
 
+
+    protected void refreshResults() {
+        Log.d(ID, "Starting refreshResults");
+        initLocation();
+        gm.clear();
+
+        setRefreshActionButtonState(true);
+
+        requestTask = new
+
+                RequestTask();
+
+        requestTask.execute();
+    }
 
     protected void refreshLocation() {
         Log.d(ID, "Starting refreshLocation");
@@ -304,7 +364,7 @@ public class MapInputActivity extends Fragment
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
                 alertDialogBuilder.setTitle("Can't figure out your physical location");
                 alertDialogBuilder.setMessage("Didn't go as expected. Most probably a network issue. \n Try again by hitting the locate me button or choosing a different location manually.\n" + e.getMessage());
-                alertDialogBuilder.setPositiveButton("Dismiss",null);
+                alertDialogBuilder.setPositiveButton("Dismiss", null);
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 alertDialog.show();
             }
@@ -676,6 +736,10 @@ public class MapInputActivity extends Fragment
             }
         });*/
 
+        PlaceAutoCompleteAdapter placeAutoCompleteAdapter = new PlaceAutoCompleteAdapter(getActivity().getApplicationContext());
+        findWhereTextView.setAdapter(placeAutoCompleteAdapter);
+        findWhatTextView.setThreshold(4);
+
         //will work in newer versions of Android and is the recommended way.
         findWhereTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -736,6 +800,30 @@ public class MapInputActivity extends Fragment
             }
         });
 
+        findWhereTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String data = (String) parent.getItemAtPosition(position);
+                Log.d(ID, "Item Selected: " + data);
+                findWhereTextView.setText(data);
+                where = data;
+
+                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                in.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+
+                // if a new text was entered then re-run the search for restaurants using the latest info.
+                if (where.length() > 0) {
+                    if (gm != null)
+                        gm.clear();
+                    setRefreshActionButtonState(true);
+
+                    requestTask = new RequestTask();
+                    requestTask.execute();
+                }
+
+            }
+        });
 
         FloatingActionButton fab = (FloatingActionButton) map_input.findViewById(R.id.fab);
         FloatingActionButton fab2 = (FloatingActionButton) map_input.findViewById(R.id.fab2);
@@ -766,8 +854,8 @@ public class MapInputActivity extends Fragment
                 AutoCompleteTextView t2 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhereTextView);
                 //  Log.d(ID, t2.getText().toString());
 
-              //  if (ma == null)
-                    ma = new MainActivityFragment();
+                //  if (ma == null)
+                ma = new MainActivityFragment();
 
                 Bundle b = new Bundle();
                 b.putSerializable("what", what);
@@ -778,7 +866,7 @@ public class MapInputActivity extends Fragment
                 MainActivity.appState = AppStateEnum.REREIVING_REVIEWS_SCREEN;
 
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
-                   ft.remove(MapInputActivity.this);
+                ft.remove(MapInputActivity.this);
                 ft.replace(R.id.container, ma, "main"); //last change was .replace
                 ft.addToBackStack("MapInput");
 
@@ -835,7 +923,7 @@ public class MapInputActivity extends Fragment
                 restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
                 //next page
                 restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
-                 restaurantArrayList.addAll(restaurantArrayList2);
+                restaurantArrayList.addAll(restaurantArrayList2);
                 //  MainActivity.restaurantArrayList = restaurantArrayList;
 
                 try {
