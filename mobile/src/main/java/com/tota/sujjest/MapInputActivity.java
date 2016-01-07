@@ -261,7 +261,7 @@ public class MapInputActivity extends Fragment
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 999 && grantResults.length > 0)
+        if (requestCode == 1 && grantResults.length > 0)
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 initLocation();
         ;
@@ -318,7 +318,7 @@ public class MapInputActivity extends Fragment
             String[] a = new String[2];
             a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(), a, 999);
+            ActivityCompat.requestPermissions(getActivity(), a, 1);
             return;
         }
 
@@ -528,7 +528,7 @@ public class MapInputActivity extends Fragment
             String[] a = new String[2];
             a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(), a, 999);
+            ActivityCompat.requestPermissions(getActivity(), a, 1);
             return;
         }
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -572,7 +572,7 @@ public class MapInputActivity extends Fragment
             String[] a = new String[2];
             a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(), a, 999);
+            ActivityCompat.requestPermissions(getActivity(), a, 1);
             return;
         }
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -738,7 +738,7 @@ public class MapInputActivity extends Fragment
 
         PlaceAutoCompleteAdapter placeAutoCompleteAdapter = new PlaceAutoCompleteAdapter(getActivity().getApplicationContext());
         findWhereTextView.setAdapter(placeAutoCompleteAdapter);
-        findWhatTextView.setThreshold(4);
+        findWhereTextView.setThreshold(4);
 
         //will work in newer versions of Android and is the recommended way.
         findWhereTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {

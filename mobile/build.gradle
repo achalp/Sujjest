@@ -3,6 +3,10 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         release {
+            keyAlias 'sujjest-release'
+            keyPassword 'achal123'
+            storeFile file('/Users/aprabhakar/AndroidStudioProjects/Tota/keystores/keystore.jks')
+            storePassword 'achal123'
         }
     }
     compileSdkVersion 23
@@ -11,12 +15,13 @@ android {
         applicationId 'com.tota.sujjest'
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionName '1.0.1.1'
+        versionCode 3
     }
     buildTypes {
         release {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     productFlavors {

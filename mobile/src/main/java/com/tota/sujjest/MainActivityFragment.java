@@ -40,6 +40,8 @@ public class MainActivityFragment extends Fragment {
     private RequestTask requestTask;
     private String what, where;
     private  RecommendationFragment recommendationFragment;
+    private ProgressBar mProgressBar;
+    private int mProgressPercent;
 
     public ArrayList<Restaurant> getRestaurantArrayList() {
         return restaurantArrayList;
@@ -72,6 +74,7 @@ public class MainActivityFragment extends Fragment {
         this.view = inflater.inflate(R.layout.fragment_main, container, false);
         this.savedInstance = savedInstanceState;
         ProgressBar pb = (ProgressBar) view.findViewById(R.id.progressBar);
+        mProgressBar = pb;
         pb.setProgress(0);
         return view;
 
