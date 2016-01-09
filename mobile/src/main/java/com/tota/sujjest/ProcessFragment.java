@@ -79,8 +79,8 @@ public class ProcessFragment extends Fragment {
         outState.putInt("ProgressPercent", mProgressPercent);
         outState.putInt("LastRestaurantProcessedPosition", mLastRestaurantProcessedPosition);
         outState.putString("what",this.what);
-        outState.putString("Where",this.where);
-        outState.putSerializable("RestaurantList",restaurantArrayList);
+        outState.putString("Where", this.where);
+        outState.putSerializable("RestaurantList", restaurantArrayList);
 
     }
 
@@ -88,12 +88,14 @@ public class ProcessFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        Log.d(ID,"OnCreateView");
         this.vg = container;
         this.view = inflater.inflate(R.layout.fragment_main, container, false);
         this.savedInstance = savedInstanceState;
 
         if(savedInstanceState !=null)
         {
+            Log.d(ID,"Restoring saved Instance");
             // Fragment was restored. Either a back button press or a configuration change
             // Restore state if any and go ahead.
             String savedWhat=null, savedWhere=null;
@@ -124,6 +126,7 @@ public class ProcessFragment extends Fragment {
         else
         {
             //no state to set. This is a new view with no state.
+            Log.d(ID,"No saved Instance");
             mProgressPercent=0;
             mLastRestaurantProcessedPosition=-1;
         }
@@ -178,7 +181,7 @@ public class ProcessFragment extends Fragment {
     private class RequestTask extends AsyncTask<String, Restaurant, ArrayList<Restaurant>> {
         // make a request to the specified url
 
-        private static final String ID="MainAct Result Task";
+        private static final String ID="ProcessFragmentTask";
         YelpProcessor yelpProcessor = new YelpProcessor();
 
         AlchemyProcessor alchemyProcessor = new AlchemyProcessor();
@@ -187,22 +190,27 @@ public class ProcessFragment extends Fragment {
         protected ArrayList<Restaurant> doInBackground(String... uri) {
             //Get list of restaurants from Yelp.
 
-            try {
-                yelpProcessor.setCity(where);
-                yelpProcessor.setDesc(what);
+            if(mRestaurantList==null) {
+                try {
+                    yelpProcessor.setCity(where);
+                    yelpProcessor.setDesc(what);
 
-                restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
-                //next page
-               restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+                    restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
+                    //next page
+                    restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
 
-                restaurantArrayList.addAll(restaurantArrayList2);
-
-            } catch (IOException e) {
-                Log.e("Error", e.toString());
-                return null;
-                //return "Error: IOExeption retrieving restaurants from Yelp";
+                    restaurantArrayList.addAll(restaurantArrayList2);
+                    mRestaurantList = restaurantArrayList;
+                } catch (IOException e) {
+                    Log.e("Error", e.toString());
+                    return null;
+                    //return "Error: IOExeption retrieving restaurants from Yelp";
+                }
             }
-
+            else {
+                Log.d(ID,"mRestaurantList is not null. So probably a restored instance.");
+                mRestaurantList = restaurantArrayList;
+            }
 
             // At this point, the Map restaurants has the first 10 or 20 results from yelps city specific page.
             // Key = Restaurants key from provider
@@ -213,7 +221,15 @@ public class ProcessFragment extends Fragment {
 
             StringBuilder strBuilder = new StringBuilder();
             //  for (Map.Entry<String, JSONObject> m : restaurants.entrySet())
-            for (Restaurant r : restaurantArrayList) {
+            int start=0;
+            if(mLastRestaurantProcessedPosition >0 ) {
+                start = mLastRestaurantProcessedPosition;
+                Log.d(ID,"Starting at Index: " + start);
+            }
+            for(int i=start;i<restaurantArrayList.size();i++)
+            {
+                Restaurant r = restaurantArrayList.get(i);
+          //  for (Restaurant r : restaurantArrayList) {
 
                 ArrayList<Review> reviewArrayList;
                 Sentiment sentiment;
@@ -233,6 +249,7 @@ public class ProcessFragment extends Fragment {
                     r.setReviews(reviewArrayList);
                     sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
                     r.setSentiment(sentiment);
+                    mLastRestaurantProcessedPosition = i;
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -264,6 +281,7 @@ public class ProcessFragment extends Fragment {
             Integer curProgress = pb.getProgress();
             int steps = pb.getMax()/restaurantArrayList.size();
             pb.setProgress(curProgress+steps);
+            mProgressPercent = curProgress+steps;
 
             String image = values[0].getImage();
             image = image.substring(2,image.length());
