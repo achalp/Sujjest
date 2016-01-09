@@ -12,18 +12,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.Picasso;
+import com.tota.sujjest.Entity.ApplicationState;
+import com.tota.sujjest.Entity.Options;
 import com.tota.sujjest.Entity.Restaurant;
-import com.tota.sujjest.Entity.Sentiment;
+import com.tota.sujjest.adapters.RestaurantArrayAdapter;
 
-import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class RecommendedFragment extends Fragment {
 
@@ -34,6 +30,7 @@ public class RecommendedFragment extends Fragment {
     private ListView mListView;
     private RestaurantArrayAdapter mRestaurantArrayAdapter;
     private Restaurant[] mRestaurantArray;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -85,92 +82,6 @@ public class RecommendedFragment extends Fragment {
 
         return view;
 
-      /* OLD
-      View view = inflater.inflate(R.layout.fragment_recommended_list_item, null);
-        this.view = view;
-        ImageView imageView;
-        TextView address,name,numReviews,cost;*/
-
-/*OLD
-        if(null != restaurant ) {
-
-            imageView = (ImageView) view.findViewById(R.id.imageViewRecommended);
-            address = (TextView) view.findViewById(R.id.textRecAddress);
-            name = (TextView) view.findViewById(R.id.textRecBizName);
-            numReviews = (TextView) view.findViewById(R.id.textRecNumReviews);
-            cost = (TextView) view.findViewById(R.id.textRecCost);
-
-
-            String image = restaurant.getImage();
-            image = image.substring(2, image.length());
-
-            Uri u = Uri.parse("http:" + "//" + URLDecoder.decode(image));
-
-            Picasso.with(getActivity().getApplicationContext()).load(u).memoryPolicy(MemoryPolicy.NO_STORE).into(imageView);
-
-            name.setText(restaurant.getBiz());
-            address.setText((restaurant.getAddress()));
-            numReviews.setText(restaurant.getNumReviews());
-            cost.setText(restaurant.getCost());
-        }
-        else
-        {
-            Log.e("Error", "Restaurant is null");
-        }
-
-        if(null != r2 ) {
-
-            imageView = (ImageView) view.findViewById(R.id.imageViewRecommended2);
-            address = (TextView) view.findViewById(R.id.textRecAddress2);
-            name = (TextView) view.findViewById(R.id.textRecBizName2);
-            numReviews = (TextView) view.findViewById(R.id.textRecNumReviews2);
-            cost = (TextView) view.findViewById(R.id.textRecCost2);
-
-
-            String image = r2.getImage();
-            image = image.substring(2, image.length());
-
-            Uri u = Uri.parse("http:" + "//" + URLDecoder.decode(image));
-
-            Picasso.with(getActivity().getApplicationContext()).load(u).memoryPolicy(MemoryPolicy.NO_STORE).into(imageView);
-
-            name.setText(r2.getBiz());
-            address.setText((r2.getAddress()));
-            numReviews.setText(r2.getNumReviews());
-            cost.setText(r2.getCost());
-        }
-        else
-        {
-            Log.e("Error", "Restaurant 2 is null");
-        }
-
-        if(null != r3 ) {
-            imageView = (ImageView) view.findViewById(R.id.imageViewRecommended3);
-            address = (TextView) view.findViewById(R.id.textRecAddress3);
-            name = (TextView) view.findViewById(R.id.textRecBizName3);
-            numReviews = (TextView) view.findViewById(R.id.textRecNumReviews3);
-            cost = (TextView) view.findViewById(R.id.textRecCost3);
-
-
-            String image = r3.getImage();
-            image = image.substring(2, image.length());
-
-            Uri u = Uri.parse("http:" + "//" + URLDecoder.decode(image));
-
-            Picasso.with(getActivity().getApplicationContext()).load(u).memoryPolicy(MemoryPolicy.NO_STORE).into(imageView);
-
-            name.setText(r3.getBiz());
-            address.setText((r3.getAddress()));
-            numReviews.setText(r3.getNumReviews());
-            cost.setText(r3.getCost());
-        }
-        else
-        {
-            Log.e("Error", "Restaurant 3 is null");
-        }
-           return view;
-*/
-
 
     }
 
@@ -184,32 +95,10 @@ public class RecommendedFragment extends Fragment {
         r3 = (Restaurant)args.get("MostRecommendedRestaurant-3");
         ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
      //   Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
-        mRestaurantArray = new Restaurant[Options.ShowN];
-        for(int i=restaurantArrayList.size()-1, j=0;i>=0 && j< Options.ShowN ;i--,j++)
+        mRestaurantArray = new Restaurant[ApplicationState.getInstance().getOptions().getShowN()];
+        for(int i=restaurantArrayList.size()-1, j=0;i>=0 && j< ApplicationState.getInstance().getOptions().getShowN() ;i--,j++)
         mRestaurantArray[j] = restaurantArrayList.get(i);
 
-      //  mRestaurantArray[0] = r;
-     //   mRestaurantArray[1] = r2;
-     //   mRestaurantArray[2]=r3;
-/*
-        //get TOP 5
-        for(int i=restaurantArrayList.size()-1,j=1;i>=0;i--,j++)
-        {
-            r = restaurantArrayList.get(i);
-            Sentiment sentiment =  r.getSentiment();
 
-            StringBuilder strBuilder = new StringBuilder();
-            if(sentiment != null) {
-                strBuilder.append(r.getBiz() + " "
-                        + sentiment.getScore() + " "
-                        + sentiment.getSentiment() + " "
-                        + sentiment.getMixed() + "\n");
-                Log.d("Sentiments", strBuilder.toString());
-            }
-            else
-                Log.e(ID,"Sentiment is null for Restaurant: " +r.getBiz());
-
-        }
-        */
     }
 }

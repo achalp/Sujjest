@@ -9,4 +9,7 @@
     <string name="action_price$$">$$</string>
     <string name="action_price$$$">$$$</string>
     <string name="action_price$$$$">$$$$</string>
+    <string name="aboutText">Sujjest helps you decided on the best restaurant options quickly by analyzing user reviews to determine how others real experience was. Saving you precious time manually reading through scores of reviews. \n It even advises you on choices that others haven\'t had a good experience with</string>
+    <string name="aboutTitle">About</string>
+    <string name="dismissTitle">Dismiss</string>
 </resources>

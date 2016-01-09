@@ -1,0 +1,381 @@
+package com.tota.sujjest;
+
+import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
+import com.tota.sujjest.Entity.AppStateEnum;
+import com.tota.sujjest.Entity.Restaurant;
+import com.tota.sujjest.Entity.Review;
+import com.tota.sujjest.Entity.Sentiment;
+import com.tota.sujjest.processors.AlchemyProcessor;
+import com.tota.sujjest.processors.YelpProcessor;
+
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
+
+/**
+ * A placeholder fragment containing a simple view.
+ */
+public class ProcessFragment extends Fragment {
+
+    public static final String ID="ProcessFragment";
+    private ViewGroup vg;
+    private View view;
+    private Bundle savedInstance;
+    private RequestTask requestTask;
+    private String what, where;
+    private  RecommendationFragment recommendationFragment;
+    private ProgressBar mProgressBar;
+    private int mProgressPercent;
+    private int mLastRestaurantProcessedPosition;
+    private ArrayList<Restaurant> mRestaurantList;
+
+    public ArrayList<Restaurant> getRestaurantArrayList() {
+        return restaurantArrayList;
+    }
+
+    protected ArrayList<Restaurant> restaurantArrayList = null;
+    protected ArrayList<Restaurant> restaurantArrayList2 = null;
+
+
+
+    public ProcessFragment() {
+    }
+
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Bundle b = getArguments();
+        what = (String) b.get("what");
+        where = (String) b.get("where");
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt("ProgressPercent", mProgressPercent);
+        outState.putInt("LastRestaurantProcessedPosition", mLastRestaurantProcessedPosition);
+        outState.putString("what",this.what);
+        outState.putString("Where",this.where);
+        outState.putSerializable("RestaurantList",restaurantArrayList);
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        this.vg = container;
+        this.view = inflater.inflate(R.layout.fragment_main, container, false);
+        this.savedInstance = savedInstanceState;
+
+        if(savedInstanceState !=null)
+        {
+            // Fragment was restored. Either a back button press or a configuration change
+            // Restore state if any and go ahead.
+            String savedWhat=null, savedWhere=null;
+            int savedProgressPercent, savedLastRestaurantProcessedPosition;
+            ArrayList<Restaurant> savedRestaurantList;
+
+            savedWhat = savedInstanceState.getString("what");
+            savedWhere = savedInstanceState.getString("where");
+
+            savedProgressPercent= savedInstanceState.getInt("ProgressPercent");
+            savedLastRestaurantProcessedPosition = savedInstanceState.getInt("LastRestaurantProcessedPosition");
+
+            savedRestaurantList = (ArrayList<Restaurant>) savedInstanceState.get("RestaurantList");
+
+            if(savedWhat !=null)
+                this.what =  savedWhat;
+
+            if(savedWhere != null)
+                this.where = savedWhere;
+
+            mProgressPercent = savedProgressPercent;
+            mLastRestaurantProcessedPosition = savedLastRestaurantProcessedPosition;
+
+            if(savedRestaurantList != null)
+            mRestaurantList = savedRestaurantList;
+
+        }
+        else
+        {
+            //no state to set. This is a new view with no state.
+            mProgressPercent=0;
+            mLastRestaurantProcessedPosition=-1;
+        }
+
+
+        return view;
+
+
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mProgressBar  = (ProgressBar) view.findViewById(R.id.progressBar);
+        mProgressBar.setProgress(mProgressPercent);
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(ID, "Started");
+
+        this.requestTask = new RequestTask();
+        this.requestTask.execute();
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(ID,"Paused");
+        if(this.requestTask != null)
+        {
+            this.requestTask.cancel(true);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(ID, "Stopped");
+
+        if(this.requestTask != null)
+        {
+            this.requestTask.cancel(true);
+        }
+    }
+
+
+    private class RequestTask extends AsyncTask<String, Restaurant, ArrayList<Restaurant>> {
+        // make a request to the specified url
+
+        private static final String ID="MainAct Result Task";
+        YelpProcessor yelpProcessor = new YelpProcessor();
+
+        AlchemyProcessor alchemyProcessor = new AlchemyProcessor();
+
+        @Override
+        protected ArrayList<Restaurant> doInBackground(String... uri) {
+            //Get list of restaurants from Yelp.
+
+            try {
+                yelpProcessor.setCity(where);
+                yelpProcessor.setDesc(what);
+
+                restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
+                //next page
+               restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+
+                restaurantArrayList.addAll(restaurantArrayList2);
+
+            } catch (IOException e) {
+                Log.e("Error", e.toString());
+                return null;
+                //return "Error: IOExeption retrieving restaurants from Yelp";
+            }
+
+
+            // At this point, the Map restaurants has the first 10 or 20 results from yelps city specific page.
+            // Key = Restaurants key from provider
+
+            // For every restaurant in 'restaurants' grab the first N (page 1 for now) reviews and
+            // populate the Map reviews.
+            // key = restaurant key from provider#review number so for eg. restaurant-of-pallino-2#1
+
+            StringBuilder strBuilder = new StringBuilder();
+            //  for (Map.Entry<String, JSONObject> m : restaurants.entrySet())
+            for (Restaurant r : restaurantArrayList) {
+
+                ArrayList<Review> reviewArrayList;
+                Sentiment sentiment;
+
+                if (isCancelled()) {Log.d(ID,"cancelled so breaking");break;}
+
+                String key = r.getBiz_key();
+
+                publishProgress(r);
+
+                try {
+
+                    reviewArrayList = yelpProcessor.getReviews(key);
+
+                  //  Log.d("Reviews", reviewArrayList.toString());
+
+                    r.setReviews(reviewArrayList);
+                    sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
+                    r.setSentiment(sentiment);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d("Error", "Error: JSONException  retrieving restaurants from Yelp " + e.getMessage());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.d("Error", "Error: IOException  retrieving restaurants from Yelp " + e.getMessage());
+                }
+
+
+            }
+
+            return restaurantArrayList;
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Restaurant... values) {
+            super.onProgressUpdate(values);
+            Log.d("Progress",values.toString());
+
+            TextView txt = (TextView) view.findViewById(R.id.textView);
+            TextView txt1 = (TextView) view.findViewById(R.id.textView1);
+            TextView txt2 = (TextView) view.findViewById(R.id.textView2);
+
+
+            ImageView imageView =(ImageView) view.findViewById(R.id.imageView);
+            ProgressBar pb = (ProgressBar) view.findViewById(R.id.progressBar);
+            Integer curProgress = pb.getProgress();
+            int steps = pb.getMax()/restaurantArrayList.size();
+            pb.setProgress(curProgress+steps);
+
+            String image = values[0].getImage();
+            image = image.substring(2,image.length());
+
+            Uri u = Uri.parse("http:" + "//" + URLDecoder.decode(image));
+
+            Picasso.with(getActivity()).load(u).transform(new RoundedCornersTransformation(10, 1)).into(imageView);
+
+            txt.clearComposingText();
+
+            StringBuilder strBuilder = new StringBuilder();
+
+            Restaurant m = values[0];
+
+
+            String key = m.getBiz_key();
+            // JSONObject reviews;
+            // JSONObject sentiment;
+
+            ArrayList<Review> reviews;
+            Sentiment sentiment;
+
+            sentiment = m.getSentiment();
+            strBuilder.append(m.getBiz() + "\n");
+
+
+            txt.setText(strBuilder.toString());
+            txt1.setText(m.getNumReviews());
+            txt2.setText(m.getCost());
+
+
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Restaurant> restaurantArrayList) {
+            super.onPostExecute(restaurantArrayList);
+
+
+            // return JSON String
+            //return jObj;
+            int mMixedInt;
+            String mType;
+            Double mScore = 0.0;
+            String maxKey=null;
+            Double maxSCore = 0.0;
+            Restaurant r = null;
+
+            Collections.sort(restaurantArrayList, Restaurant.RestScoreComparator);
+//            Log.d("Last",restaurantArrayList.get(restaurantArrayList.size()-1).getSentiment().getScore());
+            Bundle b = new Bundle();
+            b.putSerializable("RestaurantListSorted",restaurantArrayList);
+
+
+
+            //get Bottom 5
+            for(int i=0,j=1;i<restaurantArrayList.size();i++,j++)
+            {
+                r = restaurantArrayList.get(i);
+                Sentiment sentiment =  r.getSentiment();
+                StringBuilder strBuilder = new StringBuilder();
+                if(sentiment != null) {
+                    strBuilder.append(r.getBiz() + " "
+                            + sentiment.getScore() + " "
+                            + sentiment.getSentiment() + " "
+                            + sentiment.getMixed() + "\n");
+                    Log.d("Sentiments", strBuilder.toString());
+                }
+                else
+                    Log.e(ID, "Sentiment is null for Restaurant: " + r.getBiz());
+
+
+                b.putSerializable("LeastRecommendedRestaurant-"+j,r);
+
+            }
+
+
+
+//            RecommendedFragment recommendedFragment = new RecommendedFragment();
+  //          recommendedFragment.setArguments(b);
+
+           // if(recommendationFragment == null)
+             recommendationFragment = new RecommendationFragment();
+            //else //else detach so you can set the arguments again
+           // {
+            //    getFragmentManager().beginTransaction().detach(recommendationFragment).commit();
+           // }
+            recommendationFragment.setRecommendations(b);
+
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+               ft.remove(ProcessFragment.this);
+            ft.replace(R.id.container, recommendationFragment, "Recommendation");
+
+               ft.addToBackStack("Recommendation");
+               // quite important..otherwise the back button behaves weird after the second back buton press.
+               // Recommendation fragment will remain visible and will overlay the mapInputActivity
+            ft.commit();
+            MainActivity.appState = AppStateEnum.RECOMMENDATION_SCREEN;
+
+
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            Log.d(ID,"Cancelled");
+        }
+
+        @Override
+        protected void onCancelled(ArrayList<Restaurant> restaurants) {
+            super.onCancelled(restaurants);
+            Log.d(ID, "Cancelled with Results");
+
+        }
+    }
+}

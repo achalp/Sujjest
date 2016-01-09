@@ -7,20 +7,16 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Camera;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.CardView;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -35,37 +31,29 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.squareup.picasso.Picasso;
+import com.tota.sujjest.Entity.AppStateEnum;
+import com.tota.sujjest.Entity.ApplicationState;
+import com.tota.sujjest.Entity.Options;
 import com.tota.sujjest.Entity.Restaurant;
-import com.tota.sujjest.Entity.Review;
-import com.tota.sujjest.Entity.Sentiment;
-
-import org.json.JSONException;
+import com.tota.sujjest.adapters.CuisineArrayAdapter;
+import com.tota.sujjest.adapters.PlaceAutoCompleteAdapter;
+import com.tota.sujjest.processors.YelpProcessor;
+import com.tota.sujjest.widgets.ClearableAutoCompleteTextView;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.security.Permission;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -90,9 +78,16 @@ public class MapInputActivity extends Fragment
     private boolean mlocationChanged;
     private Menu optionsMenu;
     private Activity activity;
-    MainActivityFragment ma;
+    ProcessFragment ma;
+
+    private ApplicationState applicationState;
+    private Options options;
+
 
     public MapInputActivity() {
+        this.applicationState = applicationState.getInstance();
+        this.options = this.applicationState.getOptions();
+
     }
 
     @Override
@@ -145,40 +140,40 @@ public class MapInputActivity extends Fragment
 
         if (id == R.id.action_price$) {
             if (item.isChecked()) {
-                Options.Price$ = false;
+                this.options.setPrice$(false);
                 item.setChecked(false);
             } else {
-                Options.Price$ = true;
+                this.options.setPrice$(true);
                 item.setChecked(true);
 
             }
         }
         if (id == R.id.action_price$$) {
             if (item.isChecked()) {
-                Options.Price$$ = false;
+                this.options.setPrice$$(false);
                 item.setChecked(false);
             } else {
-                Options.Price$$ = true;
+                this.options.setPrice$$(true);
                 item.setChecked(true);
 
             }
         }
         if (id == R.id.action_price$$$) {
             if (item.isChecked()) {
-                Options.Price$$$ = false;
+                this.options.setPrice$$$(false);
                 item.setChecked(false);
             } else {
-                Options.Price$$$ = true;
+                this.options.setPrice$$$(true);
                 item.setChecked(true);
 
             }
         }
         if (id == R.id.action_price$$$$) {
             if (item.isChecked()) {
-                Options.Price$$$$ = false;
+                this.options.setPrice$$$$(false);
                 item.setChecked(false);
             } else {
-                Options.Price$$$$ = true;
+                this.options.setPrice$$$$(true);
                 item.setChecked(true);
 
             }
@@ -233,6 +228,8 @@ public class MapInputActivity extends Fragment
 
 
         super.onCreate(savedInstanceState);
+
+
         activity = getActivity();
         if (savedInstanceState != null) {
             Log.d(ID, "Bundle:What: " + savedInstanceState.getString("what"));
@@ -531,9 +528,10 @@ public class MapInputActivity extends Fragment
             ActivityCompat.requestPermissions(getActivity(), a, 1);
             return;
         }
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(provider, 400, 1, this);
-
+        else {
+            locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(provider, 400, 1, this);
+        }
         //location stuff is all set
         //go ahead and resume the mapFragment;
 
@@ -855,7 +853,7 @@ public class MapInputActivity extends Fragment
                 //  Log.d(ID, t2.getText().toString());
 
                 //  if (ma == null)
-                ma = new MainActivityFragment();
+                ma = new ProcessFragment();
 
                 Bundle b = new Bundle();
                 b.putSerializable("what", what);

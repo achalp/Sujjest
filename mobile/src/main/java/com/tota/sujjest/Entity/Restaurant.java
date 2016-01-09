@@ -13,6 +13,8 @@ public class Restaurant implements Serializable {
 
     public Restaurant() {
         //nothing
+         hasSentiment=false;
+       hasReviews=false;
     }
 
 
@@ -90,6 +92,26 @@ public class Restaurant implements Serializable {
     private String numReviews;
     private String image;
 
+    public boolean isHasSentiment() {
+        return hasSentiment;
+    }
+
+    public void setHasSentiment(boolean hasSentiment) {
+        this.hasSentiment = hasSentiment;
+    }
+
+    public boolean isHasReviews() {
+        return hasReviews;
+    }
+
+    public void setHasReviews(boolean hasReviews) {
+        this.hasReviews = hasReviews;
+    }
+
+    private boolean hasSentiment;
+    private boolean hasReviews;
+
+
     public Address getGoogleAddress() {
         return googleAddress;
     }
@@ -106,7 +128,14 @@ public class Restaurant implements Serializable {
     }
 
     public void setReviews(ArrayList<Review> reviews) {
+
         this.reviews = reviews;
+        if(reviews!=null)
+            this.setHasReviews(false);
+        else
+            this.setHasReviews(true);
+
+
     }
 
     public Sentiment getSentiment() {
@@ -114,7 +143,12 @@ public class Restaurant implements Serializable {
     }
 
     public void setSentiment(Sentiment sentiment) {
+
         this.sentiment = sentiment;
+        if(sentiment!=null)
+            this.setHasSentiment(true);
+        else
+            this.setHasSentiment(false);
     }
 
     private ArrayList<Review> reviews;
