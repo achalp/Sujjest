@@ -85,7 +85,7 @@ public class MapInputActivity extends Fragment
 
 
     public MapInputActivity() {
-        this.applicationState = applicationState.getInstance();
+        this.applicationState = ApplicationState.getInstance();
         this.options = this.applicationState.getOptions();
 
     }
@@ -106,13 +106,14 @@ public class MapInputActivity extends Fragment
     }
 
 
-    public void addRestaurantToMap(Restaurant restaurant) {
+   /* public void addRestaurantToMap(Restaurant restaurant) {
 
         String address;
         address = restaurant.getAddress();
 
 
     }
+    */
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -549,6 +550,10 @@ public class MapInputActivity extends Fragment
                 requestTask.execute(false);
             }
         }
+        if(restaurantArrayList!=null && restaurantArrayList.size() > 0)
+        //ultimately, do move the camera to results.
+        gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getLatitude(), restaurantArrayList.get(0).getLongitude()), 11));
+
     }
 
     @Override
@@ -557,7 +562,6 @@ public class MapInputActivity extends Fragment
         if (requestCode == 1 && grantResults.length > 0)
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 initLocation();
-        ;
 
     }
 
@@ -633,8 +637,7 @@ public class MapInputActivity extends Fragment
                         Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
                         Address address = addressList.get(0);
                         if (address != null) {
-                            String city_state = address.getLocality() + "," + address.getAdminArea();
-                            where = city_state;
+                            where = address.getLocality() + "," + address.getAdminArea();
 
                             Log.d(ID, "Found that we are here: " + where);
                         }
@@ -662,8 +665,11 @@ public class MapInputActivity extends Fragment
             Log.e(ID, "getLastKnownLocation returned null location");
 
             //if user entered a city,state then go there.
-            if (where != null && where.length() > 0)
+            if (where != null && where.length() > 0) {
                 initLocationFromName(where);
+                tlatitude=latitude;
+                tlongitude=longitude;
+            }
             else {
                 //no option, keep it at 0.0 0.0
                 tlatitude = 0.0;
@@ -749,7 +755,7 @@ public class MapInputActivity extends Fragment
                                     longitude = tlongitude;
                                     mlocationChanged = true;
                                 } else
-                                    Log.d(ID, "Location delta : " + results[0] + ". Less than 1609 so location changed");
+                                    Log.d(ID, "Location delta : " + results[0] + ". Less than 1609 so no location changed");
                             else
                                 Log.d(ID, "distanceBetween did not return an array with length > 0");
 
@@ -763,8 +769,7 @@ public class MapInputActivity extends Fragment
                             mlocationChanged = false;
                         }
                         Log.d(ID, "Found that we are here: " + where);
-                        if (gm != null)
-                            gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+
                     }
                 } else {
                     Log.e(ID, "GeoCoder: Unable to resolve location into a valid address. No address entries returned from Google Places");
@@ -775,6 +780,7 @@ public class MapInputActivity extends Fragment
                 Log.e(ID, "GeoCoder: Resolving location into Address using Google failed - geocoder.getLocation returned null");
 
             }
+
         } catch (IOException e) {
             Log.e(ID, "Exception thrown while geoCoding current location: " + e.toString());
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
@@ -784,7 +790,8 @@ public class MapInputActivity extends Fragment
             alertDialog.show();
         }
 
-
+        if (gm != null)
+            gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
         Log.i(ID, "latitude " + latitude.toString());
         Log.i(ID, "longtitude " + longitude.toString());
     }
@@ -792,12 +799,29 @@ public class MapInputActivity extends Fragment
     @Override
     public void onLocationChanged(Location location) {
         Log.d(ID, "onLocationChanged");
-        latitude = (location.getLatitude());
-        longitude = (location.getLongitude());
+        double tlatitude, tlongitude;
 
-        // if(gm != null)
-        //  gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+        tlatitude = (location.getLatitude());
+        tlongitude = (location.getLongitude());
 
+        if (tlatitude != latitude || tlongitude != longitude) {
+            float[] results = new float[1];
+            Location.distanceBetween(latitude, longitude, tlatitude, tlongitude, results);
+            if (results.length > 0)
+                if (results[0] > 1609) //more than a mile
+                {
+                    Log.d(ID, "Location delta : " + results[0] + ". Greater than 1609 so location changed");
+                    latitude = tlatitude;
+                    longitude = tlongitude;
+                    mlocationChanged = true;
+                } else
+                    Log.d(ID, "Location delta : " + results[0] + ". Less than 1609 so no location changed");
+            else
+                Log.d(ID, "distanceBetween did not return an array with length > 0");
+            // if(gm != null)
+            //  gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+
+        }
     }
 
     @Override
@@ -916,7 +940,7 @@ public class MapInputActivity extends Fragment
 
 
 
-            Geocoder geocoder = null;
+            Geocoder geocoder;
 
             if(forceReload[0].booleanValue() == true || restaurantArrayList == null) {
                 try {
@@ -1000,12 +1024,20 @@ public class MapInputActivity extends Fragment
         protected void onPostExecute(ArrayList<Restaurant> restaurantArrayList) {
             super.onPostExecute(restaurantArrayList);
 
+            Restaurant restaurant=null;
+            for(int i=0;i<restaurantArrayList.size();i++)
+            {
+                restaurant = restaurantArrayList.get(i);
+                if(restaurant.isHasGoogleAddressFields()) break;
+
+            }
 
             if (gm != null && restaurantArrayList != null &&
                     restaurantArrayList.size() > 0 &&
-                    restaurantArrayList.get(0) != null &&
-                    restaurantArrayList.get(0).isHasGoogleAddressFields())
-                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getLatitude(), restaurantArrayList.get(0).getLongitude()), 11));
+                    restaurantArrayList.get(0) != null
+                    && restaurant !=null
+                    )
+                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), 11));
 
             setRefreshActionButtonState(false);
 
