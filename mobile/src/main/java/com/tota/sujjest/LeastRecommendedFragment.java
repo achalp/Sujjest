@@ -108,8 +108,10 @@ public class LeastRecommendedFragment extends Fragment {
        // mRestaurantArray[2]=r3;
         ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
        // Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
-        mRestaurantArray = new Restaurant[ApplicationState.getInstance().getOptions().getShowN()];
-        for(int i=0, j=0;i<=restaurantArrayList.size()-1 && j< ApplicationState.getInstance().getOptions().getShowN();i++,j++)
+        int showN = ApplicationState.getInstance().getOptions().getShowN();
+
+        mRestaurantArray = new Restaurant[showN];
+        for(int i=0, j=0;i<=restaurantArrayList.size()-1 && j< showN && restaurantArrayList.size()> showN;i++,j++)
             mRestaurantArray[j] = restaurantArrayList.get(i);
 
 

@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.tota.sujjest.Entity.AppStateEnum;
+import com.tota.sujjest.Entity.ApplicationState;
 import com.tota.sujjest.Entity.Restaurant;
 import com.tota.sujjest.Entity.Review;
 import com.tota.sujjest.Entity.Sentiment;
@@ -46,6 +47,15 @@ public class ProcessFragment extends Fragment {
     private ProgressBar mProgressBar;
     private int mProgressPercent;
     private int mLastRestaurantProcessedPosition;
+
+    public ArrayList<Restaurant> getmRestaurantList() {
+        return mRestaurantList;
+    }
+
+    public void setmRestaurantList(ArrayList<Restaurant> mRestaurantList) {
+        this.mRestaurantList = mRestaurantList;
+    }
+
     private ArrayList<Restaurant> mRestaurantList;
 
     public ArrayList<Restaurant> getRestaurantArrayList() {
@@ -151,6 +161,9 @@ public class ProcessFragment extends Fragment {
         super.onStart();
         Log.d(ID, "Started");
 
+        //set app state;
+        ApplicationState.getInstance().setAppState(AppStateEnum.REREIVING_REVIEWS_SCREEN);
+
         this.requestTask = new RequestTask();
         this.requestTask.execute();
 
@@ -208,8 +221,8 @@ public class ProcessFragment extends Fragment {
                 }
             }
             else {
-                Log.d(ID,"mRestaurantList is not null. So probably a restored instance.");
-                mRestaurantList = restaurantArrayList;
+                Log.d(ID,"mRestaurantList is not null. So probably a restored instance or set by parent activity/fragment");
+                restaurantArrayList=mRestaurantList;
             }
 
             // At this point, the Map restaurants has the first 10 or 20 results from yelps city specific page.

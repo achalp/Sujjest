@@ -7,7 +7,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/margin_large"
     tools:context="com.tota.sujjest.RecommendedFragment"
-    tools:showIn="@layout/activity_main">
+    tools:showIn="@layout/fragment_recommended_list">
 
 
 
@@ -26,7 +26,7 @@
                 android:layout_gravity="top"
                 android:layout_marginTop="5dp"
                 android:layout_toRightOf="@+id/imageViewRecommended"
-                android:text="PlaceHolder"
+                android:text=""
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#FFF" />
 
@@ -38,7 +38,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="5dp"
                 android:layout_toRightOf="@+id/imageViewRecommended"
-                android:text="PlaceHolder"
+                android:text=""
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#FFF" />
 
@@ -51,7 +51,7 @@
                 android:layout_below="@+id/textRecAddress"
                 android:paddingTop="5dp"
                 android:gravity="right"
-                android:text="PlaceHolder"
+                android:text=""
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#FFF" />
 
@@ -66,7 +66,7 @@
                 android:layout_toRightOf="@+id/textRecNumReviews"
                 android:layout_alignBottom="@+id/imageViewRecommended"
                 android:gravity="right"
-                android:text="PlaceHolder"
+                android:text=""
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#FFF" />
     <TextView

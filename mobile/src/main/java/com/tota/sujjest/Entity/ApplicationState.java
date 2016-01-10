@@ -7,6 +7,16 @@ public class ApplicationState {
     private static ApplicationState ourInstance = new ApplicationState();
     private Options options;
 
+    public AppStateEnum getAppState() {
+        return appState;
+    }
+
+    public void setAppState(AppStateEnum appState) {
+        this.appState = appState;
+    }
+
+    private AppStateEnum appState;
+
     public Options getOptions() {
         return options;
     }
@@ -23,5 +33,6 @@ public class ApplicationState {
 
     private ApplicationState() {
         this.options =  new Options();
+        this.appState = AppStateEnum.HOME_SCREEN;
     }
 }

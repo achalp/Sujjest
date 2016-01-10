@@ -166,7 +166,7 @@ public class YelpProcessor {
         sb.append(YELP_LIST_OF_RESTAURANTS_END_POINT)
                 .append("?find_desc=")
                 .append(desc)
-                .append("&cflt=food")
+                .append("&cflt=restaurants")
                 .append(cuisine)
                 .append("&find_loc=")
                 .append(city.trim())

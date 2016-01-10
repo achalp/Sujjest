@@ -92,6 +92,123 @@ public class Restaurant implements Serializable {
     private String numReviews;
     private String image;
 
+    private boolean hasSentiment;
+    private boolean hasReviews;
+
+    public boolean isHasGoogleAddressFields() {
+        return hasGoogleAddressFields;
+    }
+
+    public void setHasGoogleAddressFields(boolean hasGoogleAddressFields) {
+        this.hasGoogleAddressFields = hasGoogleAddressFields;
+    }
+
+    public boolean isHasLatitude() {
+        return hasLatitude;
+    }
+
+    public void setHasLatitude(boolean hasLatitude) {
+        this.hasLatitude = hasLatitude;
+    }
+
+    public boolean isHasLongitude() {
+        return hasLongitude;
+    }
+
+    public void setHasLongitude(boolean hasLongitude) {
+        this.hasLongitude = hasLongitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getgAdminArea() {
+        return gAdminArea;
+    }
+
+    public void setgAdminArea(String gAdminArea) {
+        this.gAdminArea = gAdminArea;
+    }
+
+    public String getgCountryCode() {
+        return gCountryCode;
+    }
+
+    public void setgCountryCode(String gCountryCode) {
+        this.gCountryCode = gCountryCode;
+    }
+
+    public String getgCountryName() {
+        return gCountryName;
+    }
+
+    public void setgCountryName(String gCountryName) {
+        this.gCountryName = gCountryName;
+    }
+
+    public String getgFeatureName() {
+        return gFeatureName;
+    }
+
+    public void setgFeatureName(String gFeatureName) {
+        this.gFeatureName = gFeatureName;
+    }
+
+    public String getgLocality() {
+        return gLocality;
+    }
+
+    public void setgLocality(String gLocality) {
+        this.gLocality = gLocality;
+    }
+
+    public String getgPhone() {
+        return gPhone;
+    }
+
+    public void setgPhone(String gPhone) {
+        this.gPhone = gPhone;
+    }
+
+    public String getgURL() {
+        return gURL;
+    }
+
+    public void setgURL(String gURL) {
+        this.gURL = gURL;
+    }
+
+    public String getgAddressLine0() {
+        return gAddressLine0;
+    }
+
+    public void setgAddressLine0(String gAddressLine0) {
+        this.gAddressLine0 = gAddressLine0;
+    }
+
+    private boolean hasGoogleAddressFields;
+    private boolean hasLatitude,hasLongitude;
+
+    //Address Fields from Google:
+
+    private double latitude;
+    private double longitude;
+    private String gAdminArea,gCountryCode, gCountryName,gFeatureName,gLocality,gPhone,gURL,gAddressLine0;
+
+
     public boolean isHasSentiment() {
         return hasSentiment;
     }
@@ -108,19 +225,54 @@ public class Restaurant implements Serializable {
         this.hasReviews = hasReviews;
     }
 
-    private boolean hasSentiment;
-    private boolean hasReviews;
-
-
+ /*
     public Address getGoogleAddress() {
         return googleAddress;
     }
+    */
 
-    public void setGoogleAddress(Address googleAddress) {
-        this.googleAddress = googleAddress;
+    public void setGoogleAddressFields(Address googleAddress) {
+        if(googleAddress!=null) {
+
+            if(googleAddress.hasLatitude()) {
+                this.latitude = googleAddress.getLatitude();
+                this.hasLatitude=true;
+            }
+            else
+                this.hasLatitude=false;
+
+
+            if(googleAddress.hasLongitude()) {
+                this.longitude = googleAddress.getLongitude();
+                this.hasLongitude=true;
+            }
+            else
+                this.hasLongitude=false;
+
+
+            if(googleAddress.getMaxAddressLineIndex() >=0)
+            this.gAddressLine0=googleAddress.getAddressLine(0);
+            else
+                this.gAddressLine0="Address not available";
+
+            this.gAdminArea=googleAddress.getAdminArea();
+            this.gCountryCode=googleAddress.getCountryCode();
+            this.gCountryName=googleAddress.getCountryName();
+            this.gFeatureName=googleAddress.getFeatureName();
+            this.gLocality=googleAddress.getLocality();
+            this.gPhone=googleAddress.getPhone();
+            this.gURL=googleAddress.getUrl();
+
+            hasGoogleAddressFields=true;
+
+
+        }
+        else
+            hasGoogleAddressFields=false;
+
     }
 
-    private Address googleAddress;
+ //   private Address googleAddress;
 
     public ArrayList<Review> getReviews() {
 

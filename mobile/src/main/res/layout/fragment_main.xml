@@ -73,6 +73,7 @@
         android:gravity="bottom"
         android:layout_alignParentBottom="true"
         android:text="Credit: Yelp.com"
-        android:textAppearance="?android:textAppearanceSmall"/>
+        android:textAppearance="?android:textAppearanceSmall"
+        android:textColor="#FFF"/>
 
 </RelativeLayout>

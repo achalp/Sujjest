@@ -96,6 +96,10 @@ public class MapInputActivity extends Fragment
         // Save the user's current game state
         savedInstanceState.putString("what", what);
         savedInstanceState.putString("where", where);
+        savedInstanceState.putDouble("latitude", latitude);
+        savedInstanceState.putDouble("longitude",longitude);
+
+        savedInstanceState.putSerializable("RestaurantList", restaurantArrayList);
 
         // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState);
@@ -246,13 +250,305 @@ public class MapInputActivity extends Fragment
 
     }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        Log.d(ID, "onCreateView Starting");
+
+        setHasOptionsMenu(true);
+
+        View map_input = inflater.inflate(R.layout.fragment_map_input, container, false);
+
+
+
+        mapFragment = MapFragment.newInstance();
+        FragmentTransaction ft;
+        ft = getChildFragmentManager().beginTransaction();
+        ft.replace(R.id.map, mapFragment, "map");
+        ft.commit();
+        mapFragment.getMapAsync(this);
+
+
+
+
+
+        return map_input;
+    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.d(ID, "OnViewcreated Starting");
+        final ClearableAutoCompleteTextView findWhereTextView = (ClearableAutoCompleteTextView) view.findViewById(R.id.findWhereTextView);
+        final ClearableAutoCompleteTextView findWhatTextView = (ClearableAutoCompleteTextView) view.findViewById(R.id.findWhatTextView);
+
+        // ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), android.R.layout.simple_selectable_list_item,YelpProcessor.categories);
+        //findWhatTextView.setAdapter(arrayAdapter);
+        CuisineArrayAdapter cuisineArrayAdapter = new CuisineArrayAdapter(getActivity().getApplicationContext(), R.layout.cuiseine_type_ahead_item, YelpProcessor.categories);
+        findWhatTextView.setAdapter(cuisineArrayAdapter);
+        findWhatTextView.setThreshold(1);
 
 
+//        where = findWhereTextView.getText().toString();
+
+
+        findWhatTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String data = (String) parent.getItemAtPosition(position);
+                Log.d(ID, "Item Selected: " + data);
+                findWhatTextView.setText(data);
+                what = data;
+
+                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                in.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+
+                // if a new text was entered then re-run the search for restaurants using the latest info.
+                if (what.length() > 0) {
+                    if (gm != null)
+                        gm.clear();
+                    setRefreshActionButtonState(true);
+
+                    searchRestaurants(true);
+                }
+
+            }
+        });
+
+        findWhatTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                if (s.length() > 0) {
+                    findWhatTextView.showClearButton();
+                } else
+                    findWhatTextView.hideClearButton();
+
+
+                what = s.toString();
+
+            }
+        });
+
+        findWhatTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_GO) {
+                    //hide hte keyboard
+                    InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    //if th
+                    //ey entered something useful then attempt to resolve.
+                    if (what != null) {
+
+                        if (gm != null)
+                            gm.clear();
+
+                        setRefreshActionButtonState(true);
+
+                        if (requestTask != null)
+                            requestTask.cancel(true);
+
+                        searchRestaurants(true);
+
+                    }
+                    handled = true;
+                }
+
+
+                return handled;
+            }
+        });
+
+
+
+        PlaceAutoCompleteAdapter placeAutoCompleteAdapter = new PlaceAutoCompleteAdapter(getActivity().getApplicationContext());
+        findWhereTextView.setAdapter(placeAutoCompleteAdapter);
+        findWhereTextView.setThreshold(4);
+
+        //will work in newer versions of Android and is the recommended way.
+        findWhereTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_GO) {
+                    //hide hte keyboard
+                    InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    //if they entered something useful then attempt to resolve.
+                    if (where.length() > 0) {
+                        initLocationFromName(where);
+                        //  ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
+                        //  if(whereTextView != null)
+                        v.setText(where);
+                        //  else
+                        //    Log.e(ID,"WhereTextView is null");
+                        if (mlocationChanged) {
+                            if (gm != null)
+                                gm.clear();
+                            setRefreshActionButtonState(true);
+
+                            searchRestaurants(true);
+                        }
+                    }
+
+
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+
+
+        findWhereTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                if (s.length() > 0) {
+                    findWhereTextView.showClearButton();
+                } else
+                    findWhereTextView.hideClearButton();
+
+
+                where = s.toString();
+
+            }
+        });
+
+        findWhereTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String data = (String) parent.getItemAtPosition(position);
+                Log.d(ID, "Item Selected: " + data);
+                findWhereTextView.setText(data);
+                where = data;
+
+                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                in.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+
+                // if a new text was entered then re-run the search for restaurants using the latest info.
+                if (where.length() > 0) {
+                    if (gm != null)
+                        gm.clear();
+                    setRefreshActionButtonState(true);
+
+                    searchRestaurants(true);
+                }
+
+            }
+        });
+
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        FloatingActionButton fab2 = (FloatingActionButton) view.findViewById(R.id.fab2);
+        fab2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                refreshLocation();
+                ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
+                if (whereTextView != null)
+                    whereTextView.setText(where);
+                else
+                    Log.e(ID, "WhereTextView is null");
+
+                if (gm != null)
+                    gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
+
+
+            }
+        });
+
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                AutoCompleteTextView t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhatTextView);
+                //  Log.d(ID,t1.getText().toString());
+                AutoCompleteTextView t2 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhereTextView);
+                //  Log.d(ID, t2.getText().toString());
+
+                //  if (ma == null)
+                ma = new ProcessFragment();
+
+                Bundle b = new Bundle();
+                b.putSerializable("what", what);
+                b.putSerializable("where", where);
+                if(restaurantArrayList != null)
+                    ma.setmRestaurantList(restaurantArrayList);
+                ma.setArguments(b);
+
+
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.remove(MapInputActivity.this);
+                ft.replace(R.id.container, ma, "main"); //last change was .replace
+                ft.addToBackStack("MapInput");
+
+                //  ft.addToBackStack("main");
+                ft.commit();
+
+
+            }
+        });
+
+        Log.d(ID, "Restoring saved state:");
+        if (savedInstanceState != null) {
+            what = savedInstanceState.getString("what");
+            where = savedInstanceState.getString("where");
+        } else {
+            findWhereTextView.setText(where);
+            what = findWhatTextView.getText().toString();
+
+        }
+
+    }
+
+    private void searchRestaurants(boolean force) {
+
+        setRefreshActionButtonState(true);
+        //regardless of force or not..reload.
+        if(restaurantArrayList == null) {
+            requestTask = new RequestTask();
+            requestTask.execute(true);
+        }
+        else
+        {
+            if(force) {
+                //do force reload
+                restaurantArrayList = null;
+                requestTask = new RequestTask();
+                requestTask.execute(false);
+            }
+            else {
+                // not null and not forced to reload. Just call the thread to redraw the markers.
+                Log.d(ID, "RestaurantList is not null..I am not going to reload. Make it null if you intended to refresh or better call refreshResults");
+                requestTask = new RequestTask();
+                requestTask.execute(false);
+            }
+        }
     }
 
     @Override
@@ -273,11 +569,7 @@ public class MapInputActivity extends Fragment
 
         setRefreshActionButtonState(true);
 
-        requestTask = new
-
-                RequestTask();
-
-        requestTask.execute();
+       searchRestaurants(true);
     }
 
     protected void refreshLocation() {
@@ -287,8 +579,7 @@ public class MapInputActivity extends Fragment
         {
             gm.clear();
             setRefreshActionButtonState(true);
-            requestTask = new RequestTask();
-            requestTask.execute();
+            searchRestaurants(true);
         }
     }
 
@@ -529,27 +820,21 @@ public class MapInputActivity extends Fragment
             return;
         }
         else {
-            locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(provider, 400, 1, this);
+            locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+
+            // Define the criteria how to select the locatioin provider -> use
+            // default
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+            criteria.setPowerRequirement(Criteria.POWER_LOW);
+
+            provider = locationManager.getBestProvider(criteria, false);
+            if(provider != null)
+                locationManager.requestLocationUpdates(provider, 400, 100, this);
+            else
+                Log.e(ID,"No location provider available");
         }
-        //location stuff is all set
-        //go ahead and resume the mapFragment;
 
-        //Not doing this does not render the fragment when coming back via  aback button pressed
-/*
-        if(mapFragment==null)
-            mapFragment = MapFragment.newInstance();
-
-
-        FragmentTransaction ft;
-        ft = getChildFragmentManager().beginTransaction();
-
-        ft.replace(R.id.map, mapFragment, "map");
-        // ft.addToBackStack(mapFragment.getClass().getSimpleName());
-        ft.commit();
-
-        mapFragment.getMapAsync(this);
-*/
         Log.d(ID, "backstack count at end of onResume: " + getFragmentManager().getBackStackEntryCount());
         Log.d(ID, "OnResume Done");
 
@@ -560,13 +845,7 @@ public class MapInputActivity extends Fragment
     public void onPause() {
         super.onPause();
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
             String[] a = new String[2];
             a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
@@ -581,310 +860,33 @@ public class MapInputActivity extends Fragment
     @Override
     public void onProviderEnabled(String provider) {
         Log.i(ID, "Location is NOW available through: " + provider);
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            String[] a = new String[2];
+            a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+            a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+            ActivityCompat.requestPermissions(getActivity(), a, 1);
+            return;
+        }
+        locationManager.requestLocationUpdates(provider, 400, 100, this);
     }
 
     @Override
     public void onProviderDisabled(String provider) {
         Log.i(ID, "Location is NO LONGER available through: " + provider);
-    }
-
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        Log.d(ID, "onCreateView Starting");
-
-        setHasOptionsMenu(true);
-
-        View map_input = inflater.inflate(R.layout.fragment_map_input, container, false);
-
-
-        final ClearableAutoCompleteTextView findWhereTextView = (ClearableAutoCompleteTextView) map_input.findViewById(R.id.findWhereTextView);
-        final ClearableAutoCompleteTextView findWhatTextView = (ClearableAutoCompleteTextView) map_input.findViewById(R.id.findWhatTextView);
-
-        // if(mapFragment==null) {
-        mapFragment = MapFragment.newInstance();
-        // }
-
-        FragmentTransaction ft;
-        ft = getChildFragmentManager().beginTransaction();
-
-        ft.replace(R.id.map, mapFragment, "map");
-        //ft.addToBackStack(mapFragment.getClass().getSimpleName());
-        ft.commit();
-        //          getChildFragmentManager().executePendingTransactions();
-
-        mapFragment.getMapAsync(this);
-
-
-        // ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), android.R.layout.simple_selectable_list_item,YelpProcessor.categories);
-        //findWhatTextView.setAdapter(arrayAdapter);
-        CuisineArrayAdapter cuisineArrayAdapter = new CuisineArrayAdapter(getActivity().getApplicationContext(), R.layout.cuiseine_type_ahead_item, YelpProcessor.categories);
-        findWhatTextView.setAdapter(cuisineArrayAdapter);
-        findWhatTextView.setThreshold(1);
-
-
-//        where = findWhereTextView.getText().toString();
-
-
-        findWhatTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                String data = (String) parent.getItemAtPosition(position);
-                Log.d(ID, "Item Selected: " + data);
-                findWhatTextView.setText(data);
-                what = data;
-
-                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                in.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
-
-                // if a new text was entered then re-run the search for restaurants using the latest info.
-                if (what.length() > 0) {
-                    if (gm != null)
-                        gm.clear();
-                    setRefreshActionButtonState(true);
-
-                    requestTask = new RequestTask();
-                    requestTask.execute();
-                }
-
-            }
-        });
-
-        findWhatTextView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-                if (s.length() > 0) {
-                    findWhatTextView.showClearButton();
-                } else
-                    findWhatTextView.hideClearButton();
-
-
-                what = s.toString();
-
-            }
-        });
-
-        findWhatTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_GO) {
-                    //hide hte keyboard
-                    InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
-                    //if th
-                    //ey entered something useful then attempt to resolve.
-                    if (what != null) {
-
-                        if (gm != null)
-                            gm.clear();
-
-                        setRefreshActionButtonState(true);
-
-                        if (requestTask != null)
-                            requestTask.cancel(true);
-
-                        requestTask = new RequestTask();
-                        requestTask.execute();
-
-                    }
-                    handled = true;
-                }
-
-
-                return handled;
-            }
-        });
-
-// won't work in newer versions of android - post JellyBean
-  /*      findWhereTextView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                Log.d(ID, "IMEAction: " + ((TextView) v).getImeActionId());
-                Log.d(ID, "KeyCode: " + keyCode);
-
-                if (event.getAction() == KeyEvent.ACTION_DOWN && (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
-                    where = findWhereTextView.getText().toString();
-                    initLocationFromName(where);
-
-
-                    if (gm != null)
-                        gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
-
-                    requestTask = new RequestTask();
-                    requestTask.execute();
-                    return true;
-
-                }
-                return false;
-            }
-        });*/
-
-        PlaceAutoCompleteAdapter placeAutoCompleteAdapter = new PlaceAutoCompleteAdapter(getActivity().getApplicationContext());
-        findWhereTextView.setAdapter(placeAutoCompleteAdapter);
-        findWhereTextView.setThreshold(4);
-
-        //will work in newer versions of Android and is the recommended way.
-        findWhereTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_GO) {
-                    //hide hte keyboard
-                    InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
-                    //if they entered something useful then attempt to resolve.
-                    if (where.length() > 0) {
-                        initLocationFromName(where);
-                        //  ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
-                        //  if(whereTextView != null)
-                        v.setText(where);
-                        //  else
-                        //    Log.e(ID,"WhereTextView is null");
-                        if (mlocationChanged) {
-                            if (gm != null)
-                                gm.clear();
-                            setRefreshActionButtonState(true);
-
-                            requestTask = new RequestTask();
-                            requestTask.execute();
-                        }
-                    }
-
-
-                    handled = true;
-                }
-                return handled;
-            }
-        });
-
-
-        findWhereTextView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-                if (s.length() > 0) {
-                    findWhereTextView.showClearButton();
-                } else
-                    findWhereTextView.hideClearButton();
-
-
-                where = s.toString();
-
-            }
-        });
-
-        findWhereTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                String data = (String) parent.getItemAtPosition(position);
-                Log.d(ID, "Item Selected: " + data);
-                findWhereTextView.setText(data);
-                where = data;
-
-                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                in.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
-
-                // if a new text was entered then re-run the search for restaurants using the latest info.
-                if (where.length() > 0) {
-                    if (gm != null)
-                        gm.clear();
-                    setRefreshActionButtonState(true);
-
-                    requestTask = new RequestTask();
-                    requestTask.execute();
-                }
-
-            }
-        });
-
-        FloatingActionButton fab = (FloatingActionButton) map_input.findViewById(R.id.fab);
-        FloatingActionButton fab2 = (FloatingActionButton) map_input.findViewById(R.id.fab2);
-        fab2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                refreshLocation();
-                ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
-                if (whereTextView != null)
-                    whereTextView.setText(where);
-                else
-                    Log.e(ID, "WhereTextView is null");
-
-                if (gm != null)
-                    gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 11));
-
-
-            }
-        });
-
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                AutoCompleteTextView t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhatTextView);
-                //  Log.d(ID,t1.getText().toString());
-                AutoCompleteTextView t2 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhereTextView);
-                //  Log.d(ID, t2.getText().toString());
-
-                //  if (ma == null)
-                ma = new ProcessFragment();
-
-                Bundle b = new Bundle();
-                b.putSerializable("what", what);
-                b.putSerializable("where", where);
-                ma.setArguments(b);
-
-
-                MainActivity.appState = AppStateEnum.REREIVING_REVIEWS_SCREEN;
-
-                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                ft.remove(MapInputActivity.this);
-                ft.replace(R.id.container, ma, "main"); //last change was .replace
-                ft.addToBackStack("MapInput");
-
-                //  ft.addToBackStack("main");
-                ft.commit();
-
-
-            }
-        });
-        Log.d(ID, "Restoring saved state:");
-        if (savedInstanceState != null) {
-            what = savedInstanceState.getString("what");
-            where = savedInstanceState.getString("where");
-        } else {
-            findWhereTextView.setText(where);
-            what = findWhatTextView.getText().toString();
-
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            String[] a = new String[2];
+            a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+            a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+            ActivityCompat.requestPermissions(getActivity(), a, 1);
+            return;
         }
-        return map_input;
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(this);
     }
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -898,61 +900,78 @@ public class MapInputActivity extends Fragment
         //    gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(gm.getMyLocation().getLatitude(), gm.getMyLocation().getLongitude()),15));
 
         setRefreshActionButtonState(true);
-        requestTask = new RequestTask();
-        requestTask.execute();
+        searchRestaurants(false);
     }
 
 
-    private class RequestTask extends AsyncTask<String, Restaurant, ArrayList<Restaurant>> {
+    private class RequestTask extends AsyncTask<Boolean, Restaurant, ArrayList<Restaurant>> {
         // make a request to the specified url
 
+        private static final String ID="MapInputActResultTask";
         YelpProcessor yelpProcessor = new YelpProcessor();
 
         @Override
-        protected ArrayList<Restaurant> doInBackground(String... uri) {
+        protected ArrayList<Restaurant> doInBackground(Boolean... forceReload) {
             //Get list of restaurants from Yelp.
 
+
+
             Geocoder geocoder = null;
-            try {
 
-
-                yelpProcessor.setCity(where);
-                yelpProcessor.setDesc(what);
-                restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
-                //next page
-                restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
-                restaurantArrayList.addAll(restaurantArrayList2);
-                //  MainActivity.restaurantArrayList = restaurantArrayList;
-
+            if(forceReload[0].booleanValue() == true || restaurantArrayList == null) {
                 try {
-                    geocoder = new Geocoder(getActivity());
-                    for (Restaurant r : restaurantArrayList) {
-
-                        List<Address> addressList;
 
 
-                        addressList = geocoder.getFromLocationName(r.getAddress(), 1);
-                        if (addressList != null) {
-                            if (addressList.size() > 0) {
-                                Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
-                                r.setGoogleAddress(addressList.get(0));
-                                publishProgress(r);
+                    yelpProcessor.setCity(where);
+                    yelpProcessor.setDesc(what);
+                    restaurantArrayList = yelpProcessor.getRestaurantsForCityState(0);
+                    //next page
+                    restaurantArrayList2 = yelpProcessor.getRestaurantsForCityState(10);
+                    if(restaurantArrayList!=null)
+                        restaurantArrayList.addAll(restaurantArrayList2);
+                    else {
+                        Log.e(ID,"Bad Bad BAD FIX ME FIX ME");
+                        restaurantArrayList = restaurantArrayList2;
+                    }
+                    //  MainActivity.restaurantArrayList = restaurantArrayList;
+
+                    try {
+                        geocoder = new Geocoder(getActivity());
+                        for (Restaurant r : restaurantArrayList) {
+
+                            List<Address> addressList;
+
+
+                            addressList = geocoder.getFromLocationName(r.getAddress(), 1);
+                            if (addressList != null) {
+                                if (addressList.size() > 0) {
+                                    Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
+                                    r.setGoogleAddressFields(addressList.get(0));
+                                    publishProgress(r);
+                                }
+
+                            } else {
+                                Log.e(ID, "GeoCoder Unable to access geolocation");
+                                r.setGoogleAddressFields(null);
                             }
 
-                        } else {
-                            Log.e(ID, "GeoCoder Unable to access geolocation");
-                            r.setGoogleAddress(null);
                         }
+                    } catch (Exception e) {
+                        Log.e(ID, "Exception geocoding: " + e.toString());
 
                     }
-                } catch (Exception e) {
-                    Log.e(ID, "Exception geodcoding: " + e.toString());
+
+                } catch (IOException e) {
+                    Log.e(ID, "Exception retrieving Yelp.Com : " + e.toString());
 
                 }
+            }
+            else
+            {
+                for (Restaurant r : restaurantArrayList) {
+                    publishProgress(r);
 
-            } catch (IOException e) {
-                Log.e(ID, "Exception retrieving Yelp.Com : " + e.toString());
-
+                }
             }
 
             return restaurantArrayList;
@@ -968,13 +987,13 @@ public class MapInputActivity extends Fragment
             if (gm != null &&
                     values.length > 0 &&
                     values[0] != null &&
-                    values[0].getGoogleAddress() != null)
+                    values[0].isHasGoogleAddressFields())
                 gm.addMarker(new MarkerOptions()
-                                .position(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()))
+                                .position(new LatLng(values[0].getLatitude(), values[0].getLongitude()))
                                 .title(values[0].getBiz())
                                 .snippet(values[0].getAddress() + "\n\r" + values[0].getPhone())
                 );
-            //  gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()), 10));
+      //        gm.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(values[0].getGoogleAddress().getLatitude(), values[0].getGoogleAddress().getLongitude()), 10));
         }
 
         @Override
@@ -985,10 +1004,18 @@ public class MapInputActivity extends Fragment
             if (gm != null && restaurantArrayList != null &&
                     restaurantArrayList.size() > 0 &&
                     restaurantArrayList.get(0) != null &&
-                    restaurantArrayList.get(0).getGoogleAddress() != null)
-                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getGoogleAddress().getLatitude(), restaurantArrayList.get(0).getGoogleAddress().getLongitude()), 11));
+                    restaurantArrayList.get(0).isHasGoogleAddressFields())
+                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getLatitude(), restaurantArrayList.get(0).getLongitude()), 11));
 
             setRefreshActionButtonState(false);
+
+            CardView cardView = (CardView) getActivity().findViewById(R.id.searchCard);
+            if (cardView != null)
+                if (cardView.getVisibility() == View.VISIBLE) {
+                    //do nothing
+                    cardView.setVisibility(View.GONE);
+         //           fragment.invalidate();
+                }
 
         }
 
