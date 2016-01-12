@@ -35,6 +35,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -82,6 +84,7 @@ public class MapInputActivity extends Fragment
 
     private ApplicationState applicationState;
     private Options options;
+    private Tracker mTracker;
 
 
     public MapInputActivity() {
@@ -147,19 +150,38 @@ public class MapInputActivity extends Fragment
             if (item.isChecked()) {
                 this.options.setPrice$(false);
                 item.setChecked(false);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("UnCheck-price$")
+                        .build());
             } else {
                 this.options.setPrice$(true);
                 item.setChecked(true);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Check-price$")
+                        .build());
 
             }
+
+
         }
         if (id == R.id.action_price$$) {
             if (item.isChecked()) {
                 this.options.setPrice$$(false);
                 item.setChecked(false);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("UnCheck-price$$")
+                        .build());
             } else {
                 this.options.setPrice$$(true);
                 item.setChecked(true);
+
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Check-price$$")
+                        .build());
 
             }
         }
@@ -167,9 +189,17 @@ public class MapInputActivity extends Fragment
             if (item.isChecked()) {
                 this.options.setPrice$$$(false);
                 item.setChecked(false);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("UnCheck-price$$$")
+                        .build());
             } else {
                 this.options.setPrice$$$(true);
                 item.setChecked(true);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Check-price$$$")
+                        .build());
 
             }
         }
@@ -177,10 +207,17 @@ public class MapInputActivity extends Fragment
             if (item.isChecked()) {
                 this.options.setPrice$$$$(false);
                 item.setChecked(false);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("UnCheck-price$$$$")
+                        .build());
             } else {
                 this.options.setPrice$$$$(true);
                 item.setChecked(true);
-
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Check-price$$$$")
+                        .build());
             }
         }
 
@@ -195,10 +232,23 @@ public class MapInputActivity extends Fragment
             if (cardView != null && fragment != null)
                 if (cardView.getVisibility() == View.VISIBLE) {
                     //do nothing
+
+                    mTracker.send(new HitBuilders.EventBuilder()
+                            .setCategory("Action")
+                            .setAction("searchFilterInvisible")
+                            .build());
+
                     cardView.setVisibility(View.GONE);
                     fragment.invalidate();
+
                 } else {
                     //show
+
+                    mTracker.send(new HitBuilders.EventBuilder()
+                            .setCategory("Action")
+                            .setAction("searchFilterVisible")
+                            .build());
+
                     cardView.setVisibility(View.VISIBLE);
                     fragment.invalidate();
 
@@ -233,6 +283,10 @@ public class MapInputActivity extends Fragment
 
 
         super.onCreate(savedInstanceState);
+
+
+        AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
+        mTracker = application.getDefaultTracker();
 
 
         activity = getActivity();
@@ -315,6 +369,11 @@ public class MapInputActivity extends Fragment
                     searchRestaurants(true);
                 }
 
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("whatItemSelected")
+                        .setLabel(what)
+                        .build());
             }
         });
 
@@ -386,11 +445,21 @@ public class MapInputActivity extends Fragment
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_GO) {
+
+
+
                     //hide hte keyboard
                     InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
                     //if they entered something useful then attempt to resolve.
                     if (where.length() > 0) {
+
+                        mTracker.send(new HitBuilders.EventBuilder()
+                                .setCategory("Action")
+                                .setAction("whereChanged")
+                                .setLabel(where)
+                                .build());
+
                         initLocationFromName(where);
                         //  ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
                         //  if(whereTextView != null)
@@ -453,6 +522,13 @@ public class MapInputActivity extends Fragment
 
                 // if a new text was entered then re-run the search for restaurants using the latest info.
                 if (where.length() > 0) {
+
+                    mTracker.send(new HitBuilders.EventBuilder()
+                            .setCategory("Action")
+                            .setAction("whereItemSelected")
+                            .setLabel(where)
+                            .build());
+
                     if (gm != null)
                         gm.clear();
                     setRefreshActionButtonState(true);
@@ -468,6 +544,12 @@ public class MapInputActivity extends Fragment
         fab2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("MyLocation")
+                        .build());
+
                 refreshLocation();
                 ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView) MapInputActivity.this.getActivity().findViewById(R.id.findWhereTextView);
                 if (whereTextView != null)
@@ -486,6 +568,11 @@ public class MapInputActivity extends Fragment
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("AnalyseReviews")
+                        .build());
 
                 AutoCompleteTextView t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.findWhatTextView);
                 //  Log.d(ID,t1.getText().toString());
@@ -604,13 +691,17 @@ public class MapInputActivity extends Fragment
         criteria.setPowerRequirement(Criteria.POWER_LOW);
         provider = locationManager.getBestProvider(criteria, false);
 
+
         //if no permission, then prompt user to give permission
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        // 01-09 achal
+        // changed getActivity() to activity as it was exception'ing at onStatusChanged. Has to be a better way to do this.
+        // Perhaps check to see if the app is the active activity before doing any update that requires user action
+        if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             String[] a = new String[2];
             a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(), a, 1);
+            ActivityCompat.requestPermissions(activity, a, 1);
             return;
         }
 
@@ -834,6 +925,11 @@ public class MapInputActivity extends Fragment
     @Override
     public void onResume() {
         Log.d(ID, "Resume Starting");
+
+        mTracker.setScreenName("Map Screen");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+
         super.onResume();
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -1040,15 +1136,16 @@ public class MapInputActivity extends Fragment
                 gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), 11));
 
             setRefreshActionButtonState(false);
-
-            CardView cardView = (CardView) getActivity().findViewById(R.id.searchCard);
-            if (cardView != null)
-                if (cardView.getVisibility() == View.VISIBLE) {
-                    //do nothing
-                    cardView.setVisibility(View.GONE);
-         //           fragment.invalidate();
-                }
-
+            Activity activity = getActivity();
+            if(activity != null) {
+                CardView cardView = (CardView) activity.findViewById(R.id.searchCard);
+                if (cardView != null)
+                    if (cardView.getVisibility() == View.VISIBLE) {
+                        //do nothing
+                        cardView.setVisibility(View.GONE);
+                        //           fragment.invalidate();
+                    }
+            }
         }
 
         @Override

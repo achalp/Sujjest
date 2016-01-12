@@ -13,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.tota.sujjest.Entity.AppStateEnum;
 import com.tota.sujjest.Entity.ApplicationState;
@@ -66,10 +68,18 @@ public class MainActivity extends AppCompatActivity {
             if (item.isChecked()) {
                 ApplicationState.getInstance().getOptions().setShowN(3);
                 item.setChecked(false);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Show Three Results")
+                        .build());
             } else {
                 ApplicationState.getInstance().getOptions().setShowN(5);
 
                 item.setChecked(true);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Show Five Results")
+                        .build());
 
             }
 
@@ -78,6 +88,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (id == R.id.action_about) {
+            mTracker.send(new HitBuilders.EventBuilder()
+                    .setCategory("Action")
+                    .setAction("Show About")
+                    .build());
+
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setTitle(R.string.aboutTitle);
             alertDialogBuilder.setMessage(R.string.aboutText);
@@ -103,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     private ProcessFragment m_mainActivityFragment;
     private RecommendedFragment m_recommendedFragment;
     private Menu optionsMenu;
-
+    private Tracker mTracker;
     @Override
     public void onPostCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
         super.onPostCreate(savedInstanceState, persistentState);
@@ -125,6 +140,11 @@ public class MainActivity extends AppCompatActivity {
         actionBar.setDisplayShowHomeEnabled(true);
 
         Log.d(ID, "MainActivity; OnCreate");
+
+
+        AnalyticsApplication application = (AnalyticsApplication) getApplication();
+        mTracker = application.getDefaultTracker();
+
 
 
         appState = AppStateEnum.HOME_SCREEN;
@@ -246,7 +266,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d(ID, "onResume starting");
-
+        Log.i(ID, "Setting screen name: " + "Home Screen");
+        mTracker.setScreenName("Home Screen");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
     }
 

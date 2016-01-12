@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.tota.sujjest.Entity.ApplicationState;
 import com.tota.sujjest.Entity.Options;
 import com.tota.sujjest.Entity.Restaurant;
@@ -30,6 +32,7 @@ public class RecommendedFragment extends Fragment {
     private ListView mListView;
     private RestaurantArrayAdapter mRestaurantArrayAdapter;
     private Restaurant[] mRestaurantArray;
+    private Tracker mTracker;
 
 
     @Override
@@ -37,6 +40,9 @@ public class RecommendedFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
 
+
+        AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
+        mTracker = application.getDefaultTracker();
 
 
     }
@@ -59,6 +65,13 @@ public class RecommendedFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.e(ID, "Item Clicked at position: " + position + " with Id= " + id);
                 Log.e(ID, "Item is: " + mListView.getItemAtPosition(position));
+
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Recommended Restaurant Clicked")
+                        .setLabel(((Restaurant) mListView.getItemAtPosition(position)).getBiz_key())
+                        .build());
+
                 String uriString = "http://yelp.com/biz/" + ((Restaurant)mListView.getItemAtPosition(position)).getBiz_key();
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uriString)));
             }
@@ -86,6 +99,13 @@ public class RecommendedFragment extends Fragment {
     }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mTracker.setScreenName("Recommended Tab");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+    }
 
     @Override
     public void setArguments(Bundle args) {

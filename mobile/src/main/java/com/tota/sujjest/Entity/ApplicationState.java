@@ -35,4 +35,6 @@ public class ApplicationState {
         this.options =  new Options();
         this.appState = AppStateEnum.HOME_SCREEN;
     }
+
+
 }

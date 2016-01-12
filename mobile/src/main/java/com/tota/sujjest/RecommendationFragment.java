@@ -14,6 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.tota.sujjest.Entity.Restaurant;
 
 /**
@@ -26,7 +28,7 @@ public class RecommendationFragment extends Fragment {
     private ViewPager mPager;
     private RecommendedFragment mRecommendedFragment;
     private Bundle mBundle;
-
+    private Tracker mTracker;
 
 
     private  class MyAdapter extends FragmentPagerAdapter {
@@ -75,6 +77,8 @@ public class RecommendationFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
 
+        AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
+        mTracker = application.getDefaultTracker();
 
 
     }
@@ -137,6 +141,9 @@ public class RecommendationFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Log.d(ID, "OnResume");
+
+        mTracker.setScreenName("Recommendation Screen");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
     }
 

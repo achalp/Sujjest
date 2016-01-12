@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.Picasso;
 import com.tota.sujjest.Entity.AppStateEnum;
 import com.tota.sujjest.Entity.ApplicationState;
@@ -47,6 +49,7 @@ public class ProcessFragment extends Fragment {
     private ProgressBar mProgressBar;
     private int mProgressPercent;
     private int mLastRestaurantProcessedPosition;
+    private Tracker mTracker;
 
     public ArrayList<Restaurant> getmRestaurantList() {
         return mRestaurantList;
@@ -75,6 +78,9 @@ public class ProcessFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
+        mTracker = application.getDefaultTracker();
 
         Bundle b = getArguments();
         what = (String) b.get("what");
@@ -166,6 +172,14 @@ public class ProcessFragment extends Fragment {
 
         this.requestTask = new RequestTask();
         this.requestTask.execute();
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mTracker.setScreenName("Process Screen");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
     }
 
