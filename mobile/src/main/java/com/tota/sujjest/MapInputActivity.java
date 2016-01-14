@@ -1,6 +1,7 @@
 package com.tota.sujjest;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -85,7 +86,28 @@ public class MapInputActivity extends Fragment
     private ApplicationState applicationState;
     private Options options;
     private Tracker mTracker;
+    private SearchResultsListener searchResultsListener;
 
+    public interface SearchResultsListener
+    {
+        public void onSearchResultsAvailable(ArrayList<Restaurant> restaurants);
+        public void onAnalyzeReviews(Bundle args);
+    }
+
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            searchResultsListener = (SearchResultsListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement SearchResultsListener");
+        }
+    }
 
     public MapInputActivity() {
         this.applicationState = ApplicationState.getInstance();
@@ -580,7 +602,7 @@ public class MapInputActivity extends Fragment
                 //  Log.d(ID, t2.getText().toString());
 
                 //  if (ma == null)
-                ma = new ProcessFragment();
+      /*          ma = new ProcessFragment();
 
                 Bundle b = new Bundle();
                 b.putSerializable("what", what);
@@ -597,7 +619,11 @@ public class MapInputActivity extends Fragment
 
                 //  ft.addToBackStack("main");
                 ft.commit();
-
+*/
+                Bundle b = new Bundle();
+                b.putSerializable("what", what);
+                b.putSerializable("where", where);
+                searchResultsListener.onAnalyzeReviews(b);
 
             }
         });
@@ -1121,12 +1147,15 @@ public class MapInputActivity extends Fragment
             super.onPostExecute(restaurantArrayList);
 
             Restaurant restaurant=null;
+            if(restaurantArrayList != null )
             for(int i=0;i<restaurantArrayList.size();i++)
             {
                 restaurant = restaurantArrayList.get(i);
                 if(restaurant.isHasGoogleAddressFields()) break;
 
             }
+            else
+            Log.e(ID,"onPostExecute: RestaurantList is null");
 
             if (gm != null && restaurantArrayList != null &&
                     restaurantArrayList.size() > 0 &&
@@ -1134,7 +1163,8 @@ public class MapInputActivity extends Fragment
                     && restaurant !=null
                     )
                 gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), 11));
-
+            if(searchResultsListener != null)
+                searchResultsListener.onSearchResultsAvailable(restaurantArrayList);
             setRefreshActionButtonState(false);
             Activity activity = getActivity();
             if(activity != null) {
