@@ -24,7 +24,7 @@ import com.tota.sujjest.Entity.Restaurant;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MapInputActivity.SearchResultsListener {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -115,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private GoogleApiClient client;
     private MapInputActivity m_mapInputActivity;
+    private SearchFragment m_searchFragment;
     private ProcessFragment m_mainActivityFragment;
     private RecommendedFragment m_recommendedFragment;
     private Menu optionsMenu;
@@ -179,12 +180,20 @@ public class MainActivity extends AppCompatActivity {
 
 //copied from onResume. If doesnt work move it back:
         //  if (m_mapInputActivity == null) {
-        MapInputActivity mapInputActivity = new MapInputActivity();
+     /*   MapInputActivity mapInputActivity = new MapInputActivity();
         m_mapInputActivity = mapInputActivity;
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
 
         ft.replace(R.id.container, m_mapInputActivity, MapInputActivity.ID); //was add
+        ft.commit();
+*/
+
+         m_searchFragment = new SearchFragment();
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+        ft.replace(R.id.container, m_searchFragment, SearchFragment.ID); //was add
         ft.commit();
 
   //  commented on Jan 8 - looks like not needed
@@ -291,5 +300,32 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onSearchResultsAvailable(ArrayList<Restaurant> restaurants) {
+        Log.d(ID,"onSearchResultsAvailable called: Must Re Fr eSh Data");
+        //start to communicate with fragments and tell them you have new data for them.
+        // at the moment, this is really for telling the list of search results fragment that data is available.
+        restaurantArrayList = restaurants;
+        m_searchFragment.refreshSearchResults(restaurants);
+    }
+
+    @Override
+    public void onAnalyzeReviews(Bundle args) {
+        ProcessFragment ma = new ProcessFragment();
+
+          if(restaurantArrayList != null)
+            ma.setmRestaurantList(restaurantArrayList);
+        ma.setArguments(args);
+
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+       // ft.remove(MapInputActivity.this);
+        ft.replace(R.id.container, ma, "main"); //last change was .replace
+        ft.addToBackStack("MapInput");
+
+        //  ft.addToBackStack("main");
+        ft.commit();
     }
 }

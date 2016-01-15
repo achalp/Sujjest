@@ -1163,8 +1163,11 @@ public class MapInputActivity extends Fragment
                     && restaurant !=null
                     )
                 gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), 11));
-            if(searchResultsListener != null)
+
+            if(searchResultsListener != null) {
+                Log.d(ID,"Refreshing list results");
                 searchResultsListener.onSearchResultsAvailable(restaurantArrayList);
+            }
             setRefreshActionButtonState(false);
             Activity activity = getActivity();
             if(activity != null) {

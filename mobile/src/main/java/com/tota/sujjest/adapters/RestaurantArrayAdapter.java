@@ -28,11 +28,26 @@ public class RestaurantArrayAdapter extends ArrayAdapter<Restaurant> {
     int mLayout;
     Restaurant[] arrayList;
 
+    @Override
+    public void clear() {
+        super.clear();
+        this.arrayList=null;
+    }
+
+
+
+    @Override
+    public void addAll(Restaurant... items) {
+//        super.addAll(items);
+        this.arrayList = items;
+    }
+
     public RestaurantArrayAdapter(Context context, int resource, Restaurant[] data) {
         super(context, resource,data);
         this.mContext = context;
         this.mLayout = resource;
         this.arrayList = data;
+        setNotifyOnChange(true);
     }
 
     @Override
@@ -115,15 +130,18 @@ public class RestaurantArrayAdapter extends ArrayAdapter<Restaurant> {
                 indexFloat = indexFloat*100;
                 int index = Math.round(indexFloat);
                 if (index > 100) index = 100;
-
+                if(userPerceptionIndex != null )
                 userPerceptionIndex.setText(sentiment.getScore());
+                if(userSentiment != null )
                 userSentiment.setText( sentiment.getSentiment());
 
             }
             else
             {
-                userPerceptionIndex.setText("Not Available");
-                userSentiment.setText( "NA");
+                if(userPerceptionIndex != null )
+                    userPerceptionIndex.setText("Not Available");
+                if(userSentiment != null )
+                    userSentiment.setText( "NA");
 
             }
             Log.d(ID, "Done setting Restaurant data for Row at position("+position+").");
