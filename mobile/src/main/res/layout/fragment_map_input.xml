@@ -58,6 +58,12 @@
             android:inputType="text"
             android:imeOptions="actionGo"
             />
+                <android.support.v7.widget.AppCompatButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFF"
+                    android:text="Search"
+                    android:id="@+id/btnSearch"/>
             </LinearLayout>
         </android.support.v7.widget.CardView>
 

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.tota.sujjest.Entity.Restaurant;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -32,21 +34,25 @@ public class SearchFragment extends Fragment {
     private Tracker mTracker;
 
 
-    private  class MyAdapter extends FragmentPagerAdapter {
+    private  class MyAdapter extends android.support.v13.app.FragmentStatePagerAdapter {
         MapInputActivity map_input_fragment;
         SearchListFragment search_list_fragment;
 
         public MyAdapter(FragmentManager fm) {
             super(fm);
+            Log.d(ID, "MyAdapter: Constructed");
+
         }
 
         @Override
         public int getCount() {
+            Log.d(ID, "MyAdapter: getCount called");
             return 2;
         }
 
         @Override
         public Fragment getItem(int position) {
+            Log.d(ID, "MyAdapter: getItem called");
 
             if (position == 0) {
                 if (map_input_fragment == null) {
@@ -54,7 +60,7 @@ public class SearchFragment extends Fragment {
                     map_input_fragment.setArguments(mBundle);
 
                 } else {
-                    Log.d(ID, "Re-using fragment");
+                    Log.d(ID, "MyAdapter: Re-using fragment");
                 //    map_input_fragment.setArguments(mBundle);
 
                 }
@@ -68,7 +74,7 @@ public class SearchFragment extends Fragment {
                 search_list_fragment.setSearchResults(restaurantArrayList);
                 return search_list_fragment;
             } else {
-                Log.e(ID,"Position returned is not 0 or 1" );
+                Log.e(ID,"MyAdapter: Position returned is not 0 or 1" );
                 return null;
             }
         }
@@ -77,9 +83,18 @@ public class SearchFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if(savedInstanceState !=null) {
+            Log.d(ID,"Saved instance - restoring data in OnCreate");
+            restaurantArrayList = (ArrayList<Restaurant>) savedInstanceState.get("restaurantList");
+          //  mAdapter = (MyAdapter) savedInstanceState.get("MyAdapter");
+        }
+      //  else
+        //    mAdapter = new MyAdapter(getChildFragmentManager());
 
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
         mTracker = application.getDefaultTracker();
+
+        mAdapter = new MyAdapter(getChildFragmentManager());
 
 
     }
@@ -109,7 +124,9 @@ public class SearchFragment extends Fragment {
 
        Log.d(ID, "Starting onCreateView");
         View v = inflater.inflate(R.layout.fragment_search,container,false);
-        mAdapter = new MyAdapter(getChildFragmentManager());
+
+
+
 
         TabLayout tabLayout = (TabLayout) v.findViewById(R.id.tab_layout_search);
        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
@@ -117,7 +134,7 @@ public class SearchFragment extends Fragment {
 
         mPager = (ViewPager) v.findViewById(R.id.searchPager);
         mPager.setAdapter(mAdapter);
-        mPager.setCurrentItem(0);
+       // mPager.setCurrentItem(0);
 
         mPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -180,6 +197,8 @@ public class SearchFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(ID, "OnSaveInstanceState");
+        outState.putSerializable("RestaurantList", restaurantArrayList);
+        //  outState.putSerializable("MyAdapter", mAdapter);
 
     }
 

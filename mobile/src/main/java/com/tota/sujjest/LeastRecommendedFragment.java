@@ -49,6 +49,10 @@ public class LeastRecommendedFragment extends Fragment {
         this.options = applicationState.getOptions();
 
 
+        if(savedInstanceState != null) {
+            Log.d(ID,"Restoring State");
+            mRestaurantArray = (Restaurant[]) savedInstanceState.get("RestaurantArray");
+        }
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -70,6 +74,10 @@ public class LeastRecommendedFragment extends Fragment {
         this.options = applicationState.getOptions();
 
         mListView = (ListView) view.findViewById(R.id.recommendationList);
+        if(mRestaurantArray == null) {
+            Log.e(ID,"Restaurant Array null in OnCreateView: Why?");
+            mRestaurantArray = new Restaurant[0];
+        }
         mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(), R.layout.fragment_recommended_list_item, mRestaurantArray);
         mListView.setAdapter(mRestaurantArrayAdapter);
 
@@ -120,7 +128,7 @@ public class LeastRecommendedFragment extends Fragment {
 
     @Override
     public void setArguments(Bundle args) {
-        super.setArguments(args);
+    //    super.setArguments(args);
         Restaurant r = (Restaurant)args.get("LeastRecommendedRestaurant-1");
         r2 = (Restaurant)args.get("LeastRecommendedRestaurant-2");
         r3 = (Restaurant)args.get("LeastRecommendedRestaurant-3");
@@ -139,5 +147,17 @@ public class LeastRecommendedFragment extends Fragment {
 
     }
 
+    public void refreshOnShowNOptionChanged()
+    {
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(), R.layout.fragment_recommended_list_item, mRestaurantArray);
+        mListView.setAdapter(mRestaurantArrayAdapter);
+        mListView.requestLayout();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("RestaurantArray",mRestaurantArray);
+    }
 
 }

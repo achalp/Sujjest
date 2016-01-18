@@ -8,6 +8,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -78,6 +81,7 @@ public class ProcessFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
         mTracker = application.getDefaultTracker();
@@ -86,6 +90,17 @@ public class ProcessFragment extends Fragment {
         what = (String) b.get("what");
         where = (String) b.get("where");
 
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu,MenuInflater inflater) {
+
+        // Inflate the menu; this adds items to the action bar if it is present.
+   /*     Log.e(ID, "OnCreateOptionsMenu");
+        inflater.inflate(R.menu.menu_home, menu);
+      //  optionsMenu = menu;*/
+
+         super.onCreateOptionsMenu(menu,inflater);
     }
 
     @Override
@@ -99,6 +114,7 @@ public class ProcessFragment extends Fragment {
         outState.putSerializable("RestaurantList", restaurantArrayList);
 
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

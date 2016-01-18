@@ -27,6 +27,7 @@ public class AlchemyProcessor {
 
     public final static String ALCHEMY_TEXT_SENTIMENT_ENDPOINT = "http://gateway-a.watsonplatform.net/calls/text/TextGetTextSentiment";
     public final static String ALCHEMY_API_KEY = "186525230e98c5421b4c4ce3f6bcf6d37315a32c";
+    private HttpURLConnection urlConnection;
 
 
     public Sentiment getSentiment(String key, ArrayList<Review> restaurantReviews) throws JSONException {
@@ -42,7 +43,6 @@ public class AlchemyProcessor {
 
 
         try {
-            HttpURLConnection urlConnection;
 
             URL url = new URL(ALCHEMY_TEXT_SENTIMENT_ENDPOINT);
             Log.d("Alchemy URL", url.toString());
@@ -55,7 +55,7 @@ public class AlchemyProcessor {
                     "application/x-www-form-urlencoded");
 
             String parameters = null;
-            parameters = "outputMode=json"
+                parameters = "outputMode=json"
                     + "&apikey=" + ALCHEMY_API_KEY
                     + "&text="
                     + URLEncoder.encode(reviewsConcatenated, "UTF-8");

@@ -8,14 +8,19 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.tota.sujjest.Entity.ApplicationState;
 import com.tota.sujjest.Entity.Restaurant;
 
 /**
@@ -29,9 +34,10 @@ public class RecommendationFragment extends Fragment {
     private RecommendedFragment mRecommendedFragment;
     private Bundle mBundle;
     private Tracker mTracker;
+    private Menu optionsMenu;
 
 
-    private  class MyAdapter extends FragmentPagerAdapter {
+    private  class MyAdapter extends FragmentStatePagerAdapter {
         LeastRecommendedFragment lrec;
         RecommendedFragment rec;
 
@@ -50,6 +56,7 @@ public class RecommendationFragment extends Fragment {
             if (position == 0) {
                 if (rec == null) {
                     rec = new RecommendedFragment();
+                    Log.d(ID,"Setting Arguments for RecommendedFragment");
                     rec.setArguments(mBundle);
 
                 } else {
@@ -76,10 +83,18 @@ public class RecommendationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setHasOptionsMenu(true);
 
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
         mTracker = application.getDefaultTracker();
 
+        if(savedInstanceState !=null) {
+            Log.d(ID,"Saved instance - restoring data in OnCreate");
+            mBundle = (Bundle) savedInstanceState.getBundle("RestaurantListBundle");
+            //  mAdapter = (MyAdapter) savedInstanceState.get("MyAdapter");
+        }
+
+        mAdapter = new MyAdapter(getChildFragmentManager());
 
     }
 
@@ -101,7 +116,6 @@ public class RecommendationFragment extends Fragment {
 
        Log.d(ID, "Starting onCreateView");
         View v = inflater.inflate(R.layout.fragment_recommended,container,false);
-        mAdapter = new MyAdapter(getChildFragmentManager());
 
         TabLayout tabLayout = (TabLayout) v.findViewById(R.id.tab_layout);
        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
@@ -135,6 +149,84 @@ public class RecommendationFragment extends Fragment {
 
         return v;
 
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        // Inflate the menu; this adds items to the action bar if it is present.
+        Log.e(ID, "OnCreateOptionsMenu");
+        inflater.inflate(R.menu.menu_recommendation, menu);
+        optionsMenu = menu;
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        if(ApplicationState.getInstance().getOptions().getShowN() == 5)
+            menu.findItem(R.id.action_showN5).setChecked(true);
+        else
+            menu.findItem(R.id.action_showN5).setChecked(false);
+
+        super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+      /*  if (id == R.id.action_settings) {
+            return true;
+        }*/
+
+        if (id == R.id.action_showN5) {
+            if (item.isChecked()) {
+                ApplicationState.getInstance().getOptions().setShowN(3);
+                item.setChecked(false);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Show Three Results")
+                        .build());
+               RecommendedFragment recommendedFragment= (RecommendedFragment) mAdapter.getItem(0);
+                recommendedFragment.setArguments(mBundle);
+                recommendedFragment.refreshOnShowNOptionChanged();
+
+                LeastRecommendedFragment leastRecommendedFragment = (LeastRecommendedFragment) mAdapter.getItem(1);
+                leastRecommendedFragment.setArguments(mBundle);
+                leastRecommendedFragment.refreshOnShowNOptionChanged();
+
+
+
+
+            } else {
+                ApplicationState.getInstance().getOptions().setShowN(5);
+
+                item.setChecked(true);
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Action")
+                        .setAction("Show Five Results")
+                        .build());
+
+                RecommendedFragment recommendedFragment= (RecommendedFragment) mAdapter.getItem(0);
+                recommendedFragment.setArguments(mBundle);
+                recommendedFragment.refreshOnShowNOptionChanged();
+
+                LeastRecommendedFragment leastRecommendedFragment = (LeastRecommendedFragment) mAdapter.getItem(1);
+                leastRecommendedFragment.setArguments(mBundle);
+                leastRecommendedFragment.refreshOnShowNOptionChanged();
+
+
+            }
+
+
+        }
+
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -172,6 +264,7 @@ public class RecommendationFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(ID, "OnSaveInstanceState");
+        outState.putBundle("RestaurantListBundle", mBundle);
 
     }
 

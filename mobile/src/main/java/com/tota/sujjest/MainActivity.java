@@ -38,10 +38,6 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if(ApplicationState.getInstance().getOptions().getShowN() == 5)
-        menu.findItem(R.id.action_showN5).setChecked(true);
-        else
-            menu.findItem(R.id.action_showN5).setChecked(false);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -64,27 +60,6 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
             return true;
         }*/
 
-        if (id == R.id.action_showN5) {
-            if (item.isChecked()) {
-                ApplicationState.getInstance().getOptions().setShowN(3);
-                item.setChecked(false);
-                mTracker.send(new HitBuilders.EventBuilder()
-                        .setCategory("Action")
-                        .setAction("Show Three Results")
-                        .build());
-            } else {
-                ApplicationState.getInstance().getOptions().setShowN(5);
-
-                item.setChecked(true);
-                mTracker.send(new HitBuilders.EventBuilder()
-                        .setCategory("Action")
-                        .setAction("Show Five Results")
-                        .build());
-
-            }
-
-
-        }
 
 
         if (id == R.id.action_about) {
@@ -189,13 +164,14 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
         ft.commit();
 */
 
-         m_searchFragment = new SearchFragment();
+        if(savedInstanceState == null) {
+            m_searchFragment = new SearchFragment();
 
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
 
-        ft.replace(R.id.container, m_searchFragment, SearchFragment.ID); //was add
-        ft.commit();
-
+            ft.replace(R.id.container, m_searchFragment, SearchFragment.ID); //was add
+            ft.commit();
+        }
   //  commented on Jan 8 - looks like not needed
   //    getFragmentManager().executePendingTransactions();
 
@@ -308,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
         //start to communicate with fragments and tell them you have new data for them.
         // at the moment, this is really for telling the list of search results fragment that data is available.
         restaurantArrayList = restaurants;
+        if(m_searchFragment != null)
         m_searchFragment.refreshSearchResults(restaurants);
     }
 
@@ -321,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
 
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
-       // ft.remove(MapInputActivity.this);
+      //ft.remove(m_searchFragment);
         ft.replace(R.id.container, ma, "main"); //last change was .replace
         ft.addToBackStack("MapInput");
 

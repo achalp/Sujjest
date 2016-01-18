@@ -33,6 +33,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -265,11 +266,56 @@ public class MapInputActivity extends Fragment
 
                 } else {
                     //show
-
+                    //send GA event
                     mTracker.send(new HitBuilders.EventBuilder()
                             .setCategory("Action")
                             .setAction("searchFilterVisible")
                             .build());
+
+
+                    if(gm!=null)
+                    {
+                        LatLng latLng = gm.getCameraPosition().target;
+                        Geocoder geocoder = new Geocoder(activity);
+                        List<Address> addresses;
+                        Address selectedAddress=null;
+                        try {
+                            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 10);
+
+                            if(addresses.size() >0) {
+                                Log.d(ID, "Geocoding returned:");
+                                for (Address address : addresses) {
+                                        if(address.getSubLocality() != null)
+                                        {
+                                            selectedAddress = address;
+                                            break;
+                                        }
+                                }
+                                if(selectedAddress == null) {
+                                    selectedAddress = addresses.get(0);
+                                    where = selectedAddress.getLocality() +"," + selectedAddress.getAdminArea()+"," +selectedAddress.getCountryCode();
+                                }
+                                else
+                                {
+                                    where = selectedAddress.getSubLocality()+"," +selectedAddress.getLocality() +"," + selectedAddress.getAdminArea()+"," +selectedAddress.getCountryCode();
+
+                                }
+                                ClearableAutoCompleteTextView whereTextView = (ClearableAutoCompleteTextView)getActivity().findViewById(R.id.findWhereTextView);
+                                if(whereTextView!= null)
+                                    whereTextView.setText(where);
+
+
+                            }
+                            else
+                                Log.e(ID,"Geocding did not return any results...the where field will not be set");
+
+
+                        }catch(IOException e)
+                        {
+                            Log.e(ID,"Error Geocoding the current Map center");
+                        }
+
+                    }
 
                     cardView.setVisibility(View.VISIBLE);
                     fragment.invalidate();
@@ -306,7 +352,7 @@ public class MapInputActivity extends Fragment
 
         super.onCreate(savedInstanceState);
 
-
+        Log.d(ID, "OnCreate Starting");
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
         mTracker = application.getDefaultTracker();
 
@@ -316,11 +362,20 @@ public class MapInputActivity extends Fragment
             Log.d(ID, "Bundle:What: " + savedInstanceState.getString("what"));
 
             Log.d(ID, "Bundle:Where: " + savedInstanceState.getString("where"));
+
+            what=savedInstanceState.getString("what");
+            where =savedInstanceState.getString("where");
+            latitude=savedInstanceState.getDouble("latitude");
+            longitude=savedInstanceState.getDouble("longitude");
+
+            restaurantArrayList=(ArrayList<Restaurant>)savedInstanceState.get("RestaurantList");
+
+
         } else {
             Log.e(ID, "saved instance in OnCreate is null");
         }
 
-        Log.d(ID, "OnCreate Starting");
+
 
         initLocation();
 
@@ -359,6 +414,7 @@ public class MapInputActivity extends Fragment
         Log.d(ID, "OnViewcreated Starting");
         final ClearableAutoCompleteTextView findWhereTextView = (ClearableAutoCompleteTextView) view.findViewById(R.id.findWhereTextView);
         final ClearableAutoCompleteTextView findWhatTextView = (ClearableAutoCompleteTextView) view.findViewById(R.id.findWhatTextView);
+        final Button buttonSearch = (Button) view.findViewById(R.id.btnSearch);
 
         // ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), android.R.layout.simple_selectable_list_item,YelpProcessor.categories);
         //findWhatTextView.setAdapter(arrayAdapter);
@@ -369,6 +425,35 @@ public class MapInputActivity extends Fragment
 
 //        where = findWhereTextView.getText().toString();
 
+        buttonSearch.setOnClickListener(new
+                                                View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+
+                                                        //track in GA
+                                                        mTracker.send(new HitBuilders.EventBuilder()
+                                                                .setCategory("Action")
+                                                                .setAction("searchButtonClicked")
+                                                                .setLabel(what+","+where)
+                                                                .build());
+
+                                                        InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                                                        in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+
+                                                        /*if (what.length() > 0)*/ {
+                                                            if (gm != null)
+                                                                gm.clear();
+                                                            setRefreshActionButtonState(true);
+
+                                                            if (requestTask != null)
+                                                                requestTask.cancel(true);
+
+                                                            searchRestaurants(true);
+                                                        }
+
+
+                                                    }
+                                                });
 
         findWhatTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -383,14 +468,14 @@ public class MapInputActivity extends Fragment
                 in.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
 
                 // if a new text was entered then re-run the search for restaurants using the latest info.
-                if (what.length() > 0) {
+            /*    if (what.length() > 0) {
                     if (gm != null)
                         gm.clear();
                     setRefreshActionButtonState(true);
 
                     searchRestaurants(true);
                 }
-
+*/
                 mTracker.send(new HitBuilders.EventBuilder()
                         .setCategory("Action")
                         .setAction("whatItemSelected")
@@ -434,7 +519,7 @@ public class MapInputActivity extends Fragment
                     in.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
                     //if th
                     //ey entered something useful then attempt to resolve.
-                    if (what != null) {
+                  /*  if (what != null) {
 
                         if (gm != null)
                             gm.clear();
@@ -444,9 +529,9 @@ public class MapInputActivity extends Fragment
                         if (requestTask != null)
                             requestTask.cancel(true);
 
-                        searchRestaurants(true);
+                  //      searchRestaurants(true);
 
-                    }
+                    }*/
                     handled = true;
                 }
 
@@ -488,13 +573,13 @@ public class MapInputActivity extends Fragment
                         v.setText(where);
                         //  else
                         //    Log.e(ID,"WhereTextView is null");
-                        if (mlocationChanged) {
+                      /*  if (mlocationChanged) {
                             if (gm != null)
                                 gm.clear();
                             setRefreshActionButtonState(true);
 
                             searchRestaurants(true);
-                        }
+                        }*/
                     }
 
 
@@ -551,11 +636,12 @@ public class MapInputActivity extends Fragment
                             .setLabel(where)
                             .build());
 
-                    if (gm != null)
+                /*    if (gm != null)
                         gm.clear();
                     setRefreshActionButtonState(true);
 
                     searchRestaurants(true);
+                    */
                 }
 
             }
@@ -632,6 +718,11 @@ public class MapInputActivity extends Fragment
         if (savedInstanceState != null) {
             what = savedInstanceState.getString("what");
             where = savedInstanceState.getString("where");
+            latitude=savedInstanceState.getDouble("latitude");
+            longitude=savedInstanceState.getDouble("longitude");
+
+            restaurantArrayList=(ArrayList<Restaurant>)savedInstanceState.get("RestaurantList");
+
         } else {
             findWhereTextView.setText(where);
             what = findWhatTextView.getText().toString();
@@ -665,7 +756,7 @@ public class MapInputActivity extends Fragment
         }
         if(restaurantArrayList!=null && restaurantArrayList.size() > 0)
         //ultimately, do move the camera to results.
-        gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getLatitude(), restaurantArrayList.get(0).getLongitude()), 11));
+        gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getLatitude(), restaurantArrayList.get(0).getLongitude()), gm.getCameraPosition().zoom));
 
     }
 
@@ -681,7 +772,7 @@ public class MapInputActivity extends Fragment
 
     protected void refreshResults() {
         Log.d(ID, "Starting refreshResults");
-        initLocation();
+       // initLocation();
         gm.clear();
 
         setRefreshActionButtonState(true);
@@ -736,7 +827,7 @@ public class MapInputActivity extends Fragment
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 100, this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100, this);
 
-        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        location = locationManager.getLastKnownLocation(provider);
 
         // Initialize the location fields
         if (location != null) {
@@ -748,7 +839,7 @@ public class MapInputActivity extends Fragment
             geocoder = new Geocoder(activity);
 
             try {
-                addressList = geocoder.getFromLocation(tlatitude, tlongitude, 1);
+                addressList = geocoder.getFromLocation(tlatitude, tlongitude, 10);
                 if (addressList != null) {
                     if (addressList.size() > 0) {
                         Log.d(ID, "Geocoder Address: " + addressList.get(0).toString());
@@ -1082,7 +1173,7 @@ public class MapInputActivity extends Fragment
                     //  MainActivity.restaurantArrayList = restaurantArrayList;
 
                     try {
-                        geocoder = new Geocoder(getActivity());
+                        geocoder = new Geocoder(activity);
                         for (Restaurant r : restaurantArrayList) {
 
                             List<Address> addressList;
@@ -1161,9 +1252,14 @@ public class MapInputActivity extends Fragment
                     restaurantArrayList.size() > 0 &&
                     restaurantArrayList.get(0) != null
                     && restaurant !=null
-                    )
-                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), 11));
+                    ) {
+                double zoom = 0.0;
+                zoom = gm.getCameraPosition().zoom;
+                if (zoom > 11)
+                    zoom = 11;
 
+                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), gm.getCameraPosition().zoom));
+            }
             if(searchResultsListener != null) {
                 Log.d(ID,"Refreshing list results");
                 searchResultsListener.onSearchResultsAvailable(restaurantArrayList);

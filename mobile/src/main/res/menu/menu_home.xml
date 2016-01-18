@@ -4,12 +4,6 @@
     tools:context="com.tota.sujjest.MainActivity">
 
     <item
-        android:id="@+id/action_showN5"
-        android:checkable="true"
-        android:orderInCategory="200"
-        android:title="@string/action_showN5"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_about"
         android:orderInCategory="1000"
         android:title="@string/action_about"

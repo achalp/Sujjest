@@ -38,10 +38,11 @@ public class PlaceAutoCompleteAdapter extends BaseAdapter implements Filterable 
                 FilterResults filterResults = new FilterResults();
                 if (constraint != null) {
                     List<String> cities = getPlaces(mContext, constraint.toString());
-                    if (cities != null)
+                    if (cities != null) {
                         // Assign the data to the FilterResults
                         filterResults.values = cities;
-                    filterResults.count = cities.size();
+                        filterResults.count = cities.size();
+                    }
                 }
                     else {
                     Log.e(ID, "getPlaces did not return a result of places. probably a teleport issue");

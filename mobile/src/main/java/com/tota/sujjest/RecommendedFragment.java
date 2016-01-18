@@ -3,6 +3,7 @@ package com.tota.sujjest;
  * Created by aprabhakar on 11/27/15.
  */
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
@@ -25,15 +26,15 @@ import java.util.ArrayList;
 
 public class RecommendedFragment extends Fragment {
 
-    private Bundle arguments;
-    private View  view;
     private static final String ID="RecommendedFragment";
-    Restaurant restaurant=null,r2=null,r3=null;
     private ListView mListView;
     private RestaurantArrayAdapter mRestaurantArrayAdapter;
     private Restaurant[] mRestaurantArray;
     private Tracker mTracker;
-
+    private ApplicationState applicationState;
+    private Options options;
+    private ArrayList<Restaurant> restaurantArrayList;
+    private Activity activity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,14 @@ public class RecommendedFragment extends Fragment {
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
         mTracker = application.getDefaultTracker();
 
+        this.applicationState = ApplicationState.getInstance();
+        this.options = applicationState.getOptions();
+        this.activity = getActivity();
+
+        if(savedInstanceState != null) {
+            Log.d(ID,"Restoring State");
+            mRestaurantArray = (Restaurant[]) savedInstanceState.get("RestaurantArray");
+        }
 
     }
 
@@ -54,8 +63,11 @@ public class RecommendedFragment extends Fragment {
         Log.d(ID, "Starting onCreateView");
 
         View view = inflater.inflate(R.layout.fragment_recommended_list, null);
-        this.view = view;
         mListView = (ListView)view.findViewById(R.id.recommendationList);
+        if(mRestaurantArray == null) {
+            Log.e(ID,"Restaurant Array null in OnCreateView: Why?");
+            mRestaurantArray = new Restaurant[0];
+        }
         mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(),R.layout.fragment_recommended_list_item, mRestaurantArray);
         mListView.setAdapter(mRestaurantArrayAdapter);
 
@@ -109,16 +121,27 @@ public class RecommendedFragment extends Fragment {
 
     @Override
     public void setArguments(Bundle args) {
-        super.setArguments(args);
-        Restaurant r = (Restaurant)args.get("MostRecommendedRestaurant-1");
-         r2 = (Restaurant)args.get("MostRecommendedRestaurant-2");
-        r3 = (Restaurant)args.get("MostRecommendedRestaurant-3");
-        ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
-     //   Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
+       // super.setArguments(args);
+        restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
         mRestaurantArray = new Restaurant[ApplicationState.getInstance().getOptions().getShowN()];
         for(int i=restaurantArrayList.size()-1, j=0;i>=0 && j< ApplicationState.getInstance().getOptions().getShowN() ;i--,j++)
         mRestaurantArray[j] = restaurantArrayList.get(i);
 
 
+    }
+
+    public void refreshOnShowNOptionChanged()
+    {
+
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_recommended_list_item, mRestaurantArray);
+        mListView.setAdapter(mRestaurantArrayAdapter);
+        mListView.requestLayout();
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("RestaurantArray",mRestaurantArray);
     }
 }
