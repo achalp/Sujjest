@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,14 +16,27 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.tota.sujjest.Entity.AppStateEnum;
-import com.tota.sujjest.Entity.ApplicationState;
-import com.tota.sujjest.Entity.Options;
 import com.tota.sujjest.Entity.Restaurant;
 
 import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements MapInputActivity.SearchResultsListener {
+    public static final String ID = "MainActivity";
+    public static AppStateEnum appState = AppStateEnum.HOME_SCREEN;
+    public static ArrayList<Restaurant> restaurantArrayList = null;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+    private MapInputActivity m_mapInputActivity;
+    private SearchFragment m_searchFragment;
+    private ProcessFragment m_mainActivityFragment;
+    private RecommendedFragment m_recommendedFragment;
+    private Menu optionsMenu;
+    private Tracker mTracker;
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -33,20 +45,16 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_home, menu);
         optionsMenu = menu;
-        return super.onCreateOptionsMenu(menu);
+        super.onCreateOptionsMenu(menu);
+        return true;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
 
-        return super.onPrepareOptionsMenu(menu);
+        super.onPrepareOptionsMenu(menu);
+        return true;
     }
-
-
-
-
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -59,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
       /*  if (id == R.id.action_settings) {
             return true;
         }*/
-
 
 
         if (id == R.id.action_about) {
@@ -80,21 +87,6 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
         return super.onOptionsItemSelected(item);
     }
 
-    public static AppStateEnum appState = AppStateEnum.HOME_SCREEN;
-
-    public static final String ID = "MainActivity";
-    public static ArrayList<Restaurant> restaurantArrayList = null;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
-    private MapInputActivity m_mapInputActivity;
-    private SearchFragment m_searchFragment;
-    private ProcessFragment m_mainActivityFragment;
-    private RecommendedFragment m_recommendedFragment;
-    private Menu optionsMenu;
-    private Tracker mTracker;
     @Override
     public void onPostCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
         super.onPostCreate(savedInstanceState, persistentState);
@@ -105,8 +97,8 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
+        //      Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        //      setSupportActionBar(myToolbar);
 
         ActionBar actionBar = getSupportActionBar();
 
@@ -130,8 +122,10 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
                     public void onBackStackChanged() {
                         // Update your UI here.
                         Log.i(ID, "Back Stack Changed Listener called");
+                        Log.d(ID, "invalidating menu");
+                        invalidateOptionsMenu();
 
-                        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+                      /*  Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
                         switch (appState)
 
                         {
@@ -148,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
                                 if (menuItem != null)
                                     menuItem.setVisible(false);
                             }
-                        }
+                        }*/
 
                     }
                 });
@@ -214,8 +208,10 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
                     //  ft.add(R.id.map,mapFragment,"map");
 
                     ft.commit();*/
+            getFragmentManager().popBackStack();
+//            getFragmentManager().popBackStack("MapInput", FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
-            getFragmentManager().popBackStack("MapInput", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
         } else
             super.onBackPressed();
 

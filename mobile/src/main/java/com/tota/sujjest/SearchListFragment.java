@@ -10,6 +10,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -17,7 +19,6 @@ import android.widget.ListView;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.tota.sujjest.Entity.ApplicationState;
 import com.tota.sujjest.Entity.Restaurant;
 import com.tota.sujjest.adapters.RestaurantArrayAdapter;
 
@@ -25,10 +26,10 @@ import java.util.ArrayList;
 
 public class SearchListFragment extends Fragment {
 
-    private Bundle arguments;
-    private View  view;
     private static final String ID="SearchListFragment";
     Restaurant restaurant=null,r2=null,r3=null;
+    private Bundle arguments;
+    private View view;
     private ListView mListView;
     private RestaurantArrayAdapter mRestaurantArrayAdapter;
     private Restaurant[] mRestaurantArray;
@@ -36,9 +37,26 @@ public class SearchListFragment extends Fragment {
     private ArrayList<Restaurant> restaurantArrayList;
     private Activity activity;
 
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(ID, "in OnCreateOptionsMenu");
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        Log.d(ID, "in onPrepareOptionsMenu");
+
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
 
         Log.d(ID,"OnCreate Starting");
         activity = getActivity();
@@ -67,6 +85,8 @@ public class SearchListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         Log.d(ID, "Starting onCreateView");
+
+        setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_search_list, null);
 

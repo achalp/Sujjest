@@ -1,7 +1,6 @@
 package com.tota.sujjest;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -46,7 +45,6 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.tota.sujjest.Entity.AppStateEnum;
 import com.tota.sujjest.Entity.ApplicationState;
 import com.tota.sujjest.Entity.Options;
 import com.tota.sujjest.Entity.Restaurant;
@@ -67,34 +65,31 @@ public class MapInputActivity extends Fragment
 
 
     public static final String ID = "MapInputActivity";
-
+    public GoogleApiClient client;
     protected ArrayList<Restaurant> restaurantArrayList = null;
     protected ArrayList<Restaurant> restaurantArrayList2 = null;
-    private RequestTask requestTask;
-    private GoogleMap gm;
-    public GoogleApiClient client;
-    Double latitude = 0.0, longitude = 0.0;
-    private LocationManager locationManager;
-    private String provider;
     protected String where;
     protected String what;
     protected MapFragment mapFragment;
+    Double latitude = 0.0, longitude = 0.0;
+    ProcessFragment ma;
+    private RequestTask requestTask;
+    private GoogleMap gm;
+    private LocationManager locationManager;
+    private String provider;
     private boolean mlocationChanged;
     private Menu optionsMenu;
     private Activity activity;
-    ProcessFragment ma;
-
     private ApplicationState applicationState;
     private Options options;
     private Tracker mTracker;
     private SearchResultsListener searchResultsListener;
 
-    public interface SearchResultsListener
-    {
-        public void onSearchResultsAvailable(ArrayList<Restaurant> restaurants);
-        public void onAnalyzeReviews(Bundle args);
-    }
+    public MapInputActivity() {
+        this.applicationState = ApplicationState.getInstance();
+        this.options = this.applicationState.getOptions();
 
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -110,12 +105,6 @@ public class MapInputActivity extends Fragment
         }
     }
 
-    public MapInputActivity() {
-        this.applicationState = ApplicationState.getInstance();
-        this.options = this.applicationState.getOptions();
-
-    }
-
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         Log.d(ID, "Starting onSaveInstanceState");
@@ -123,12 +112,23 @@ public class MapInputActivity extends Fragment
         savedInstanceState.putString("what", what);
         savedInstanceState.putString("where", where);
         savedInstanceState.putDouble("latitude", latitude);
-        savedInstanceState.putDouble("longitude",longitude);
+        savedInstanceState.putDouble("longitude", longitude);
 
         savedInstanceState.putSerializable("RestaurantList", restaurantArrayList);
 
         // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        super.onCreateOptionsMenu(menu, inflater);
+        Log.e(ID, "OnCreateOptionsMenu");
+        inflater.inflate(R.menu.menu_main, menu);
+        optionsMenu = menu;
+
+        //      return super.onCreateOptionsMenu(menu);
     }
 
 
@@ -142,19 +142,9 @@ public class MapInputActivity extends Fragment
     */
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        Log.e(ID, "OnCreateOptionsMenu");
-        inflater.inflate(R.menu.menu_main, menu);
-        optionsMenu = menu;
-        super.onCreateOptionsMenu(menu, inflater);
-
-        //      return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
+        Log.e(ID, "in opPrepareOptionsMenu");
     }
 
     @Override
@@ -351,6 +341,7 @@ public class MapInputActivity extends Fragment
 
 
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         Log.d(ID, "OnCreate Starting");
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
@@ -363,18 +354,17 @@ public class MapInputActivity extends Fragment
 
             Log.d(ID, "Bundle:Where: " + savedInstanceState.getString("where"));
 
-            what=savedInstanceState.getString("what");
-            where =savedInstanceState.getString("where");
-            latitude=savedInstanceState.getDouble("latitude");
-            longitude=savedInstanceState.getDouble("longitude");
+            what = savedInstanceState.getString("what");
+            where = savedInstanceState.getString("where");
+            latitude = savedInstanceState.getDouble("latitude");
+            longitude = savedInstanceState.getDouble("longitude");
 
-            restaurantArrayList=(ArrayList<Restaurant>)savedInstanceState.get("RestaurantList");
+            restaurantArrayList = (ArrayList<Restaurant>) savedInstanceState.get("RestaurantList");
 
 
         } else {
             Log.e(ID, "saved instance in OnCreate is null");
         }
-
 
 
         initLocation();
@@ -389,9 +379,8 @@ public class MapInputActivity extends Fragment
         Log.d(ID, "onCreateView Starting");
 
         setHasOptionsMenu(true);
-
+        setMenuVisibility(true);
         View map_input = inflater.inflate(R.layout.fragment_map_input, container, false);
-
 
 
         mapFragment = MapFragment.newInstance();
@@ -400,9 +389,6 @@ public class MapInputActivity extends Fragment
         ft.replace(R.id.map, mapFragment, "map");
         ft.commit();
         mapFragment.getMapAsync(this);
-
-
-
 
 
         return map_input;
@@ -754,10 +740,16 @@ public class MapInputActivity extends Fragment
                 requestTask.execute(false);
             }
         }
-        if(restaurantArrayList!=null && restaurantArrayList.size() > 0)
-        //ultimately, do move the camera to results.
-        gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getLatitude(), restaurantArrayList.get(0).getLongitude()), gm.getCameraPosition().zoom));
+        if (restaurantArrayList != null && restaurantArrayList.size() > 0) {
+            //ultimately, do move the camera to results.
+            float zoom;
+            zoom = gm.getCameraPosition().zoom;
+            Log.d(ID, "Zoom:=" + zoom);
+            if (zoom < 11) zoom = 11;
 
+            gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurantArrayList.get(0).getLatitude(), restaurantArrayList.get(0).getLongitude()), zoom));
+
+        }
     }
 
     @Override
@@ -768,7 +760,6 @@ public class MapInputActivity extends Fragment
                 initLocation();
 
     }
-
 
     protected void refreshResults() {
         Log.d(ID, "Starting refreshResults");
@@ -1055,8 +1046,7 @@ public class MapInputActivity extends Fragment
             a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
             ActivityCompat.requestPermissions(getActivity(), a, 1);
             return;
-        }
-        else {
+        } else {
             locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
 
             // Define the criteria how to select the locatioin provider -> use
@@ -1066,10 +1056,10 @@ public class MapInputActivity extends Fragment
             criteria.setPowerRequirement(Criteria.POWER_LOW);
 
             provider = locationManager.getBestProvider(criteria, false);
-            if(provider != null)
+            if (provider != null)
                 locationManager.requestLocationUpdates(provider, 400, 100, this);
             else
-                Log.e(ID,"No location provider available");
+                Log.e(ID, "No location provider available");
         }
 
         Log.d(ID, "backstack count at end of onResume: " + getFragmentManager().getBackStackEntryCount());
@@ -1092,7 +1082,6 @@ public class MapInputActivity extends Fragment
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         locationManager.removeUpdates(this);
     }
-
 
     @Override
     public void onProviderEnabled(String provider) {
@@ -1123,8 +1112,6 @@ public class MapInputActivity extends Fragment
         locationManager.removeUpdates(this);
     }
 
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.d(ID, "onMapReady Starting");
@@ -1140,6 +1127,12 @@ public class MapInputActivity extends Fragment
         searchRestaurants(false);
     }
 
+
+    public interface SearchResultsListener {
+        void onSearchResultsAvailable(ArrayList<Restaurant> restaurants);
+
+        void onAnalyzeReviews(Bundle args);
+    }
 
     private class RequestTask extends AsyncTask<Boolean, Restaurant, ArrayList<Restaurant>> {
         // make a request to the specified url
@@ -1253,12 +1246,13 @@ public class MapInputActivity extends Fragment
                     restaurantArrayList.get(0) != null
                     && restaurant !=null
                     ) {
-                double zoom = 0.0;
+                float zoom = 0.0f;
                 zoom = gm.getCameraPosition().zoom;
-                if (zoom > 11)
+                Log.d(ID, "Zoom:=" + zoom);
+                if (zoom < 11)
                     zoom = 11;
 
-                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), gm.getCameraPosition().zoom));
+                gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), zoom));
             }
             if(searchResultsListener != null) {
                 Log.d(ID,"Refreshing list results");

@@ -1,6 +1,5 @@
 package com.tota.sujjest;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.net.Uri;
@@ -10,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -43,6 +41,8 @@ import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 public class ProcessFragment extends Fragment {
 
     public static final String ID="ProcessFragment";
+    protected ArrayList<Restaurant> restaurantArrayList = null;
+    protected ArrayList<Restaurant> restaurantArrayList2 = null;
     private ViewGroup vg;
     private View view;
     private Bundle savedInstance;
@@ -53,6 +53,10 @@ public class ProcessFragment extends Fragment {
     private int mProgressPercent;
     private int mLastRestaurantProcessedPosition;
     private Tracker mTracker;
+    private ArrayList<Restaurant> mRestaurantList;
+
+    public ProcessFragment() {
+    }
 
     public ArrayList<Restaurant> getmRestaurantList() {
         return mRestaurantList;
@@ -62,26 +66,14 @@ public class ProcessFragment extends Fragment {
         this.mRestaurantList = mRestaurantList;
     }
 
-    private ArrayList<Restaurant> mRestaurantList;
-
     public ArrayList<Restaurant> getRestaurantArrayList() {
         return restaurantArrayList;
     }
 
-    protected ArrayList<Restaurant> restaurantArrayList = null;
-    protected ArrayList<Restaurant> restaurantArrayList2 = null;
-
-
-
-    public ProcessFragment() {
-    }
-
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        setHasOptionsMenu(false);
 
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
         mTracker = application.getDefaultTracker();
@@ -121,6 +113,9 @@ public class ProcessFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         Log.d(ID,"OnCreateView");
+
+        setHasOptionsMenu(false);
+
         this.vg = container;
         this.view = inflater.inflate(R.layout.fragment_main, container, false);
         this.savedInstance = savedInstanceState;
