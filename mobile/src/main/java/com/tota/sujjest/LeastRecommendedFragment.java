@@ -25,9 +25,9 @@ import java.util.ArrayList;
 
 public class LeastRecommendedFragment extends Fragment {
 
+    private static final String ID = "LeastRecommendFragment";
     private Bundle arguments;
     private View  view;
-    private static final String ID="LeastRecommendFragment";
     private Restaurant restaurant=null,r2=null,r3=null;
     private ListView mListView;
     private RestaurantArrayAdapter mRestaurantArrayAdapter;
@@ -35,6 +35,8 @@ public class LeastRecommendedFragment extends Fragment {
     private ApplicationState applicationState;
     private Options options;
     private Tracker mTracker;
+    private ArrayList<Restaurant> mRestaurantArrayListBottomN;
+    private ArrayList<Restaurant> restaurantArrayList;
 
 
     @Override
@@ -78,7 +80,7 @@ public class LeastRecommendedFragment extends Fragment {
             Log.e(ID,"Restaurant Array null in OnCreateView: Why?");
             mRestaurantArray = new Restaurant[0];
         }
-        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(), R.layout.fragment_recommended_list_item, mRestaurantArray);
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(), R.layout.fragment_recommended_list_item, mRestaurantArrayListBottomN);
         mListView.setAdapter(mRestaurantArrayAdapter);
 
 
@@ -129,27 +131,22 @@ public class LeastRecommendedFragment extends Fragment {
     @Override
     public void setArguments(Bundle args) {
     //    super.setArguments(args);
-        Restaurant r = (Restaurant)args.get("LeastRecommendedRestaurant-1");
-        r2 = (Restaurant)args.get("LeastRecommendedRestaurant-2");
-        r3 = (Restaurant)args.get("LeastRecommendedRestaurant-3");
-       // mRestaurantArray = new Restaurant[3];
-       // mRestaurantArray[0] = r;
-       // mRestaurantArray[1] = r2;
-       // mRestaurantArray[2]=r3;
-        ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
-       // Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
+        restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
+        mRestaurantArrayListBottomN = new ArrayList<Restaurant>();
         int showN = ApplicationState.getInstance().getOptions().getShowN();
 
-        mRestaurantArray = new Restaurant[showN];
+        //  mRestaurantArray = new Restaurant[showN];
         for(int i=0, j=0;i<=restaurantArrayList.size()-1 && j< showN && restaurantArrayList.size()> showN;i++,j++)
-            mRestaurantArray[j] = restaurantArrayList.get(i);
+            //   mRestaurantArray[j] = restaurantArrayList.get(i);
+            mRestaurantArrayListBottomN.add(restaurantArrayList.get(i));
+
 
 
     }
 
     public void refreshOnShowNOptionChanged()
     {
-        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(), R.layout.fragment_recommended_list_item, mRestaurantArray);
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(), R.layout.fragment_recommended_list_item, mRestaurantArrayListBottomN);
         mListView.setAdapter(mRestaurantArrayAdapter);
         mListView.requestLayout();
     }
@@ -157,7 +154,7 @@ public class LeastRecommendedFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable("RestaurantArray",mRestaurantArray);
+        outState.putSerializable("RestaurantArray", mRestaurantArrayListBottomN);
     }
 
 }

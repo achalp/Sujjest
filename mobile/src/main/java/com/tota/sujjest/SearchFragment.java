@@ -5,8 +5,10 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -61,6 +63,7 @@ public class SearchFragment extends Fragment {
         //  else
         //    mAdapter = new MyAdapter(getChildFragmentManager());
 
+
         AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
         mTracker = application.getDefaultTracker();
 
@@ -75,13 +78,18 @@ public class SearchFragment extends Fragment {
 
     public void setSearchResults(ArrayList<Restaurant> args) {
         //  super.setArguments(args);
-        restaurantArrayList = args;
+        restaurantArrayList = new ArrayList<Restaurant>();
+        for (Restaurant r : args)
+            restaurantArrayList.add(r);
     }
 
     public void refreshSearchResults(ArrayList<Restaurant> args) {
         setSearchResults(args);
 //        if(mAdapter)
-        ((SearchListFragment) (mAdapter.getItem(1))).setSearchResults(args);
+
+        SearchListFragment searchListFragment = (SearchListFragment) mAdapter.getRegisteredFragment(1);
+        searchListFragment.setSearchResults(args);
+
     }
 
     @Nullable
@@ -98,11 +106,11 @@ public class SearchFragment extends Fragment {
         TabLayout tabLayout = (TabLayout) v.findViewById(R.id.tab_layout_search);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
+        //Note: If adapter moves from onCreateView to OnCreate then the optionsMenu is not rendedered after back pressed event.
+        mAdapter = new MyAdapter(getChildFragmentManager());
 
         mPager = (ViewPager) v.findViewById(R.id.searchPager);
 
-        //Note: If adapter moves from onCreateView to OnCreate then the optionsMenu is not rendedered after back pressed event.
-        mAdapter = new MyAdapter(getChildFragmentManager());
 
         mPager.setAdapter(mAdapter);
         mPager.setCurrentItem(0);
@@ -117,6 +125,8 @@ public class SearchFragment extends Fragment {
             @Override
             public void onPageSelected(int position) {
                 Log.d(ID, "ViewPager ka onPageSelected was called");
+                // refreshSearchResults(restaurantArrayList);
+
             }
 
             @Override
@@ -213,9 +223,8 @@ public class SearchFragment extends Fragment {
         Log.d(ID, "OnDestroyView");
     }
 
-    private class MyAdapter extends android.support.v13.app.FragmentStatePagerAdapter {
-        MapInputActivity map_input_fragment;
-        SearchListFragment search_list_fragment;
+    private class MyAdapter extends FragmentStatePagerAdapter {
+        SparseArray<Fragment> registeredFragments = new SparseArray<Fragment>();
 
         public MyAdapter(FragmentManager fm) {
             super(fm);
@@ -224,36 +233,36 @@ public class SearchFragment extends Fragment {
         }
 
         @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment fragment = (Fragment) super.instantiateItem(container, position);
+            registeredFragments.put(position, fragment);
+            return fragment;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            registeredFragments.remove(position);
+            super.destroyItem(container, position, object);
+        }
+
+        public Fragment getRegisteredFragment(int position) {
+            return registeredFragments.get(position);
+        }
+        @Override
         public int getCount() {
-            Log.d(ID, "MyAdapter: getCount called");
             return 2;
         }
 
         @Override
         public Fragment getItem(int position) {
+
             Log.d(ID, "MyAdapter: getItem called");
 
             if (position == 0) {
-                if (map_input_fragment == null) {
-                    map_input_fragment = new MapInputActivity();
-                    map_input_fragment.setArguments(mBundle);
-                    map_input_fragment.setHasOptionsMenu(true);
-
-                } else {
-                    Log.d(ID, "MyAdapter: Re-using fragment");
-                    //    map_input_fragment.setArguments(mBundle);
-
-                }
-
-                return map_input_fragment;
+                return new MapInputActivity();
             }
             if (position == 1) {
-                if (search_list_fragment == null)
-                    search_list_fragment = new SearchListFragment();
-                search_list_fragment.setHasOptionsMenu(true);
-
-                search_list_fragment.setSearchResults(restaurantArrayList);
-                return search_list_fragment;
+                return new SearchListFragment();
             } else {
                 Log.e(ID, "MyAdapter: Position returned is not 0 or 1");
                 return null;

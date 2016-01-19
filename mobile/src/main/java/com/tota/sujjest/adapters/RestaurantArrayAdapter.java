@@ -17,6 +17,7 @@ import com.tota.sujjest.Entity.Sentiment;
 import com.tota.sujjest.R;
 
 import java.net.URLDecoder;
+import java.util.ArrayList;
 
 /**
  * Created by aprabhakar on 12/22/15.
@@ -26,28 +27,59 @@ public class RestaurantArrayAdapter extends ArrayAdapter<Restaurant> {
     private static final String ID="RestaurantArrayAdapter";
     Context mContext;
     int mLayout;
-    Restaurant[] arrayList;
+    // Restaurant[] arrayList;
+    private ArrayList<Restaurant> restaurantArrayList;
+
+    public RestaurantArrayAdapter(Context context, int resource, ArrayList<Restaurant> data) {
+        super(context, resource, data);
+        this.mContext = context;
+        this.mLayout = resource;
+        this.restaurantArrayList = new ArrayList<Restaurant>();
+        this.addAll(data);
+        //this.restaurantArrayList=data;
+        //= new ArrayList<Restaurant>();
+        //   this.arrayList = data;
+        //   this.addAll(data);
+        setNotifyOnChange(true);
+    }
 
     @Override
     public void clear() {
         super.clear();
-        this.arrayList=null;
+        //     this.arrayList=null;
+        this.restaurantArrayList.clear();
     }
 
+    @Override
+    public void add(Restaurant object) {
 
+        super.add(object);
+        this.restaurantArrayList.add(object);
+
+
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        super.notifyDataSetChanged();
+    }
 
     @Override
     public void addAll(Restaurant... items) {
-//        super.addAll(items);
-        this.arrayList = items;
+        super.addAll(items);
+
+//        this.clear();
+        for (Restaurant r : items)
+            this.add(r);
+
+
+
     }
 
-    public RestaurantArrayAdapter(Context context, int resource, Restaurant[] data) {
-        super(context, resource,data);
-        this.mContext = context;
-        this.mLayout = resource;
-        this.arrayList = data;
-        setNotifyOnChange(true);
+    public void replaceAll(Restaurant[] items) {
+//        super.addAll(items);
+        //    this.arrayList = items;
+        // this.addAll(items);
     }
 
     @Override

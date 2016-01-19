@@ -5,6 +5,7 @@ package com.tota.sujjest;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,10 +35,23 @@ public class SearchListFragment extends Fragment {
     private RestaurantArrayAdapter mRestaurantArrayAdapter;
     private Restaurant[] mRestaurantArray;
     private Tracker mTracker;
-    private ArrayList<Restaurant> restaurantArrayList;
+    private ArrayList<Restaurant> m_restaurantArrayList;
     private Activity activity;
+    private RequestDataListener requestDataListener;
 
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.d(ID, "onAttach");
+
+        try {
+            requestDataListener = (RequestDataListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement RequestDataListener");
+        }
+    }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         Log.d(ID, "in OnCreateOptionsMenu");
@@ -55,10 +69,12 @@ public class SearchListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        m_restaurantArrayList = new ArrayList<Restaurant>();
+
 
         setHasOptionsMenu(true);
 
-        Log.d(ID,"OnCreate Starting");
+        Log.d(ID, "OnCreate Starting");
         activity = getActivity();
 
 
@@ -68,8 +84,9 @@ public class SearchListFragment extends Fragment {
         if(savedInstanceState != null )
         {
             Log.d(ID,"Restoring State:");
-            mRestaurantArray = (Restaurant[]) savedInstanceState.get("restaurantArray");
+            m_restaurantArrayList = (ArrayList<Restaurant>) savedInstanceState.get("m_restaurantArrayList");
         }
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_search_list_item, m_restaurantArrayList);
 
     }
 
@@ -77,7 +94,7 @@ public class SearchListFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(ID, "OnSaveInstanceState");
-        outState.putSerializable("restaurantArray", mRestaurantArray);
+        outState.putSerializable("m_restaurantArrayList", m_restaurantArrayList);
 
     }
 
@@ -91,18 +108,23 @@ public class SearchListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search_list, null);
 
         if(savedInstanceState !=null) {
-            mRestaurantArray = (Restaurant[]) savedInstanceState.get("restaurantArray");
-           // setSearchResults(restaurantArrayList);
+            //    m_restaurantArrayList = (ArrayList<Restaurant>) savedInstanceState.get("m_restaurantArrayList");
+            // setSearchResults(m_restaurantArrayList);
+        } else {
+            //  if(requestDataListener != null)
+            //    m_restaurantArrayList = requestDataListener.onRequestData(this.ID);
         }
+
 
         this.view = view;
         mListView = (ListView)view.findViewById(R.id.searchList);
-        if(mRestaurantArray == null) {
-            Log.e(ID,"Restaurant Array null in OnCreateView: Why?");
-            mRestaurantArray = new Restaurant[0];
-        }
-        mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity,R.layout.fragment_search_list_item, mRestaurantArray);
+        //  if(mRestaurantArrayAdapter==null)
+        //     mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity,R.layout.fragment_search_list_item, m_restaurantArrayList);
         mListView.setAdapter(mRestaurantArrayAdapter);
+
+        //      mRestaurantArrayAdapter.clear();
+        //       mRestaurantArrayAdapter.addAll(m_restaurantArrayList);
+        //       mRestaurantArrayAdapter.notifyDataSetChanged();
 
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -150,47 +172,61 @@ public class SearchListFragment extends Fragment {
         mTracker.setScreenName("Search List Tab");
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
+
     }
 
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-if(args != null ) {
-    ArrayList<Restaurant> restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
-    //   Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
-    mRestaurantArray = new Restaurant[restaurantArrayList.size()];
-    for (int i = 0; i < restaurantArrayList.size(); i++)
-        mRestaurantArray[i] = restaurantArrayList.get(i);
+        if (args != null) {
+            //    m_restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
+            //   Collections.sort(m_restaurantArrayList, Restaurant.RestScoreReverseComparator);
+ /*   mRestaurantArray = new Restaurant[m_restaurantArrayList.size()];
+    for (int i = 0; i < m_restaurantArrayList.size(); i++)
+        mRestaurantArray[i] = m_restaurantArrayList.get(i);
 }
         else
     mRestaurantArray = new Restaurant[0];
+*/
 
-
+        }
     }
 
     public void setSearchResults(ArrayList<Restaurant> args)
     {
 
         if(args != null ) {
-            //   Collections.sort(restaurantArrayList, Restaurant.RestScoreReverseComparator);
+            // m_restaurantArrayList = args;
 
-            mRestaurantArray = new Restaurant[args.size()];
+           /* mRestaurantArray = new Restaurant[args.size()];
             for (int i = 0; i < args.size(); i++)
                 mRestaurantArray[i] = args.get(i);
-
+*/
           //  mRestaurantArrayAdapter.clear();
          //   mRestaurantArrayAdapter.addAll(mRestaurantArray);
             Log.d(ID, "set data for restaurantArray");
-            if(mRestaurantArrayAdapter != null) {
-                mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_search_list_item, mRestaurantArray);
-               mListView.setAdapter(mRestaurantArrayAdapter);
-                mListView.requestLayout();
+            if (mRestaurantArrayAdapter != null) {
+                // mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_search_list_item, mRestaurantArray);
+                mRestaurantArrayAdapter.clear();
+                mRestaurantArrayAdapter.addAll(args);
 
+                //mListView.setAdapter(mRestaurantArrayAdapter);
+                mRestaurantArrayAdapter.notifyDataSetChanged();
+                //  mListView.requestLayout();
+                // mListView.invalidate();
+
+            } else {
+                //   mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_search_list_item, m_restaurantArrayList);
+                //   mListView.setAdapter(mRestaurantArrayAdapter);
+                //     mListView.requestLayout();
+                // mListView.invalidate();
             }
+            //store a reference for later saving.
+            m_restaurantArrayList = args;
         }
         else {
             Log.e(ID, "setSearchResults called with a null argumnet");
-            mRestaurantArray = new Restaurant[0];
+            //mRestaurantArray = new Restaurant[0];
 
             //throw new NullPointerException();
         }

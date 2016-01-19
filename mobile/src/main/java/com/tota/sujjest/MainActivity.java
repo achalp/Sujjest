@@ -21,7 +21,7 @@ import com.tota.sujjest.Entity.Restaurant;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements MapInputActivity.SearchResultsListener {
+public class MainActivity extends AppCompatActivity implements MapInputActivity.SearchResultsListener, RequestDataListener {
     public static final String ID = "MainActivity";
     public static AppStateEnum appState = AppStateEnum.HOME_SCREEN;
     public static ArrayList<Restaurant> restaurantArrayList = null;
@@ -36,6 +36,12 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
     private RecommendedFragment m_recommendedFragment;
     private Menu optionsMenu;
     private Tracker mTracker;
+
+
+    @Override
+    public ArrayList<Restaurant> onRequestData(String Tag) {
+        return restaurantArrayList;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -165,6 +171,12 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
 
             ft.replace(R.id.container, m_searchFragment, SearchFragment.ID); //was add
             ft.commit();
+        } else {
+            // this is a restore from a previous run
+            // get searchFragment by asking for it
+            m_searchFragment = (SearchFragment) getFragmentManager().findFragmentByTag(SearchFragment.ID);
+            if (m_searchFragment == null)
+                Log.e(ID, "BAD BAD- searchFragment is never expected to be null");
         }
   //  commented on Jan 8 - looks like not needed
   //    getFragmentManager().executePendingTransactions();
@@ -208,8 +220,8 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
                     //  ft.add(R.id.map,mapFragment,"map");
 
                     ft.commit();*/
-            getFragmentManager().popBackStack();
-//            getFragmentManager().popBackStack("MapInput", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            //     getFragmentManager().popBackStack();
+            getFragmentManager().popBackStack("MapInput", FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
 
         } else
@@ -279,9 +291,12 @@ public class MainActivity extends AppCompatActivity implements MapInputActivity.
         Log.d(ID,"onSearchResultsAvailable called: Must Re Fr eSh Data");
         //start to communicate with fragments and tell them you have new data for them.
         // at the moment, this is really for telling the list of search results fragment that data is available.
-        restaurantArrayList = restaurants;
+        restaurantArrayList = new ArrayList<Restaurant>();
+        for (Restaurant r : restaurants)
+            restaurantArrayList.add(r);
+
         if(m_searchFragment != null)
-        m_searchFragment.refreshSearchResults(restaurants);
+            m_searchFragment.refreshSearchResults(restaurantArrayList);
     }
 
     @Override

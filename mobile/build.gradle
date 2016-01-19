@@ -16,8 +16,8 @@ android {
         applicationId 'com.tota.sujjest'
         minSdkVersion 17
         targetSdkVersion 23
-        versionName '1.0.2.0'
-        versionCode 10
+        versionName '1.0.2.2'
+        versionCode 12
     }
     buildTypes {
         release {

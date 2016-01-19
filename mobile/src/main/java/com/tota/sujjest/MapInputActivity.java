@@ -92,8 +92,22 @@ public class MapInputActivity extends Fragment
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.d(ID, "onAttach");
+
+        try {
+            searchResultsListener = (SearchResultsListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement SearchResultsListener");
+        }
+    }
+
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        Log.d(ID, "onAttach -- the deprecated one");
 
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
@@ -709,6 +723,9 @@ public class MapInputActivity extends Fragment
 
             restaurantArrayList=(ArrayList<Restaurant>)savedInstanceState.get("RestaurantList");
 
+            findWhatTextView.setText(what);
+            findWhereTextView.setText(where);
+
         } else {
             findWhereTextView.setText(where);
             what = findWhatTextView.getText().toString();
@@ -785,8 +802,12 @@ public class MapInputActivity extends Fragment
     protected void initLocation() {
         Geocoder geocoder;
         List<Address> addressList;
-        Double tlatitude = latitude;
-        Double tlongitude = longitude;
+        Double tlatitude;
+        //
+        // //= latitude;
+        //
+        Double tlongitude;
+        // //= longitude;
         Location location;
 
         // Get the location manager
@@ -870,9 +891,9 @@ public class MapInputActivity extends Fragment
                 tlongitude=longitude;
             }
             else {
-                //no option, keep it at 0.0 0.0
-                tlatitude = 0.0;
-                tlongitude = 0.0;
+                //no option, keep it at whatever is in latitude and longitude
+                tlatitude = latitude;
+                tlongitude = longitude;
             }
         }
 
@@ -1254,7 +1275,7 @@ public class MapInputActivity extends Fragment
 
                 gm.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()), zoom));
             }
-            if(searchResultsListener != null) {
+            if (searchResultsListener != null && getActivity() != null) {
                 Log.d(ID,"Refreshing list results");
                 searchResultsListener.onSearchResultsAvailable(restaurantArrayList);
             }

@@ -35,6 +35,7 @@ public class RecommendedFragment extends Fragment {
     private Options options;
     private ArrayList<Restaurant> restaurantArrayList;
     private Activity activity;
+    private ArrayList<Restaurant> mRestaurantArrayListTopN;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,7 +69,7 @@ public class RecommendedFragment extends Fragment {
             Log.e(ID,"Restaurant Array null in OnCreateView: Why?");
             mRestaurantArray = new Restaurant[0];
         }
-        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(),R.layout.fragment_recommended_list_item, mRestaurantArray);
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(getActivity().getApplicationContext(), R.layout.fragment_recommended_list_item, mRestaurantArrayListTopN);
         mListView.setAdapter(mRestaurantArrayAdapter);
 
 
@@ -123,17 +124,21 @@ public class RecommendedFragment extends Fragment {
     public void setArguments(Bundle args) {
        // super.setArguments(args);
         restaurantArrayList = (ArrayList<Restaurant>) args.get("RestaurantListSorted");
-        mRestaurantArray = new Restaurant[ApplicationState.getInstance().getOptions().getShowN()];
-        for(int i=restaurantArrayList.size()-1, j=0;i>=0 && j< ApplicationState.getInstance().getOptions().getShowN() ;i--,j++)
-        mRestaurantArray[j] = restaurantArrayList.get(i);
+        mRestaurantArrayListTopN = new ArrayList<Restaurant>();
+        int size = ApplicationState.getInstance().getOptions().getShowN();
 
+        //mRestaurantArray = new Restaurant[ApplicationState.getInstance().getOptions().getShowN()];
+        for(int i=restaurantArrayList.size()-1, j=0;i>=0 && j< ApplicationState.getInstance().getOptions().getShowN() ;i--,j++)
+            //  mRestaurantArray[j] = restaurantArrayList.get(i);
+            mRestaurantArrayListTopN.add(restaurantArrayList.get(i));
 
     }
 
     public void refreshOnShowNOptionChanged()
     {
 
-        mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_recommended_list_item, mRestaurantArray);
+        //   mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_recommended_list_item, mRestaurantArray);
+        mRestaurantArrayAdapter = new RestaurantArrayAdapter(activity, R.layout.fragment_recommended_list_item, mRestaurantArrayListTopN);
         mListView.setAdapter(mRestaurantArrayAdapter);
         mListView.requestLayout();
 
@@ -142,6 +147,6 @@ public class RecommendedFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable("RestaurantArray",mRestaurantArray);
+        outState.putSerializable("RestaurantArray", mRestaurantArrayListTopN);
     }
 }

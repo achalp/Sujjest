@@ -1,5 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rellayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/margin_large"
@@ -7,8 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/margin_large"
     tools:context="com.tota.sujjest.RecommendedFragment"
-    tools:showIn="@layout/fragment_recommended_list"
-    android:id="@+id/rellayout">
+    tools:showIn="@layout/fragment_recommended_list">
 
 
 
@@ -25,8 +25,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="1dp"
                 android:layout_toRightOf="@+id/imageViewRecommended"
+                android:ellipsize="marquee"
+                android:lines="1"
                 android:text=""
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#FFF" />
@@ -47,11 +49,11 @@
                 android:id="@+id/textRecNumReviews"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/imageViewRecommended"
                 android:layout_alignBottom="@+id/imageViewRecommended"
                 android:layout_below="@+id/textRecAddress"
-                android:paddingTop="5dp"
+                android:layout_toRightOf="@+id/imageViewRecommended"
                 android:gravity="right"
+                android:paddingTop="5dp"
                 android:text=""
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#FFF" />
@@ -61,12 +63,12 @@
                 android:id="@+id/textRecCost"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/imageViewRecommended"
                 android:layout_alignParentRight="true"
                 android:layout_below="@+id/textRecAddress"
-                android:paddingTop="5dp"
                 android:layout_toRightOf="@+id/textRecNumReviews"
-                android:layout_alignBottom="@+id/imageViewRecommended"
                 android:gravity="right"
+                android:paddingTop="5dp"
                 android:text=""
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#FFF" />
