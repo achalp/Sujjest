@@ -35,7 +35,8 @@ public class RestaurantArrayAdapter extends ArrayAdapter<Restaurant> {
         this.mContext = context;
         this.mLayout = resource;
         this.restaurantArrayList = new ArrayList<Restaurant>();
-        this.addAll(data);
+        //    this.clear();
+        //    this.addAll(data);
         //this.restaurantArrayList=data;
         //= new ArrayList<Restaurant>();
         //   this.arrayList = data;

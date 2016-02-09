@@ -24,6 +24,7 @@ import com.tota.sujjest.Entity.Restaurant;
 import com.tota.sujjest.Entity.Review;
 import com.tota.sujjest.Entity.Sentiment;
 import com.tota.sujjest.processors.AlchemyProcessor;
+import com.tota.sujjest.processors.TotaProcessor;
 import com.tota.sujjest.processors.YelpProcessor;
 
 import org.json.JSONException;
@@ -223,6 +224,7 @@ public class ProcessFragment extends Fragment {
         YelpProcessor yelpProcessor = new YelpProcessor();
 
         AlchemyProcessor alchemyProcessor = new AlchemyProcessor();
+        TotaProcessor totaProcessor = new TotaProcessor();
 
         @Override
         protected ArrayList<Restaurant> doInBackground(String... uri) {
@@ -285,7 +287,8 @@ public class ProcessFragment extends Fragment {
                   //  Log.d("Reviews", reviewArrayList.toString());
 
                     r.setReviews(reviewArrayList);
-                    sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
+                    //sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
+                    sentiment = totaProcessor.getSentiment(key, reviewArrayList);
                     r.setSentiment(sentiment);
                     mLastRestaurantProcessedPosition = i;
 
@@ -373,27 +376,6 @@ public class ProcessFragment extends Fragment {
             b.putSerializable("RestaurantListSorted",restaurantArrayList);
 
 
-
-            //get Bottom 5
-            for(int i=0,j=1;i<restaurantArrayList.size();i++,j++)
-            {
-                r = restaurantArrayList.get(i);
-                Sentiment sentiment =  r.getSentiment();
-                StringBuilder strBuilder = new StringBuilder();
-                if(sentiment != null) {
-                    strBuilder.append(r.getBiz() + " "
-                            + sentiment.getScore() + " "
-                            + sentiment.getSentiment() + " "
-                            + sentiment.getMixed() + "\n");
-                    Log.d("Sentiments", strBuilder.toString());
-                }
-                else
-                    Log.e(ID, "Sentiment is null for Restaurant: " + r.getBiz());
-
-
-                b.putSerializable("LeastRecommendedRestaurant-"+j,r);
-
-            }
 
 
 

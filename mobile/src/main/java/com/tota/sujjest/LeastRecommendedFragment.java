@@ -136,11 +136,13 @@ public class LeastRecommendedFragment extends Fragment {
         int showN = ApplicationState.getInstance().getOptions().getShowN();
 
         //  mRestaurantArray = new Restaurant[showN];
-        for(int i=0, j=0;i<=restaurantArrayList.size()-1 && j< showN && restaurantArrayList.size()> showN;i++,j++)
+        for (int i = 0, j = 0; i <= restaurantArrayList.size() - 1 && j < showN && restaurantArrayList.size() > showN; i++) {
             //   mRestaurantArray[j] = restaurantArrayList.get(i);
+
             mRestaurantArrayListBottomN.add(restaurantArrayList.get(i));
+            j++;
 
-
+        }
 
     }
 

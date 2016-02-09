@@ -95,6 +95,7 @@ public class MapInputActivity extends Fragment
     public void onAttach(Context context) {
         super.onAttach(context);
         Log.d(ID, "onAttach");
+        activity = getActivity();
 
         try {
             searchResultsListener = (SearchResultsListener) context;
@@ -102,6 +103,13 @@ public class MapInputActivity extends Fragment
             throw new ClassCastException(activity.toString()
                     + " must implement SearchResultsListener");
         }
+
+        initLocation();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 
     @Override
@@ -381,7 +389,7 @@ public class MapInputActivity extends Fragment
         }
 
 
-        initLocation();
+
 
 
     }
@@ -1107,30 +1115,33 @@ public class MapInputActivity extends Fragment
     @Override
     public void onProviderEnabled(String provider) {
         Log.i(ID, "Location is NOW available through: " + provider);
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (getActivity() != null) {
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            String[] a = new String[2];
-            a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
-            a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(), a, 1);
-            return;
+                String[] a = new String[2];
+                a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+                a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+                ActivityCompat.requestPermissions(getActivity(), a, 1);
+                return;
+            }
+            locationManager.requestLocationUpdates(provider, 400, 100, this);
         }
-        locationManager.requestLocationUpdates(provider, 400, 100, this);
     }
-
     @Override
     public void onProviderDisabled(String provider) {
         Log.i(ID, "Location is NO LONGER available through: " + provider);
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (getActivity() != null) {
+            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            String[] a = new String[2];
-            a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
-            a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
-            ActivityCompat.requestPermissions(getActivity(), a, 1);
-            return;
+                String[] a = new String[2];
+                a[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+                a[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+                ActivityCompat.requestPermissions(activity, a, 1);
+                return;
+            }
+            locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+            locationManager.removeUpdates(this);
         }
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.removeUpdates(this);
     }
 
     @Override

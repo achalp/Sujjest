@@ -19,11 +19,11 @@ package com.tota.sujjest;
  * limitations under the License.
  */
 
-        import android.app.Application;
+import android.app.Application;
+import android.content.Context;
 
-        import com.google.android.gms.analytics.GoogleAnalytics;
-        import com.google.android.gms.analytics.Logger;
-        import com.google.android.gms.analytics.Tracker;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.Tracker;
 
 /**
  * This is a subclass of {@link Application} used to provide shared objects for this app, such as
@@ -31,7 +31,7 @@ package com.tota.sujjest;
  */
 public class AnalyticsApplication extends android.app.Application {
     private Tracker mTracker;
-
+    private Context mContext;
     /**
      * Gets the default {@link Tracker} for this {@link Application}.
      * @return tracker
@@ -43,5 +43,14 @@ public class AnalyticsApplication extends android.app.Application {
             mTracker = analytics.newTracker(R.xml.global_tracker);
         }
         return mTracker;
+    }
+
+    synchronized public Context getContext() {
+        if (mContext == null) {
+            mContext = getApplicationContext();
+            // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
+            //   mTracker = analytics.newTracker(R.xml.global_tracker);
+        }
+        return mContext;
     }
 }

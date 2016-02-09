@@ -20,6 +20,7 @@ import com.google.android.gms.analytics.Tracker;
 import com.tota.sujjest.Entity.ApplicationState;
 import com.tota.sujjest.Entity.Options;
 import com.tota.sujjest.Entity.Restaurant;
+import com.tota.sujjest.Entity.Sentiment;
 import com.tota.sujjest.adapters.RestaurantArrayAdapter;
 
 import java.util.ArrayList;
@@ -85,7 +86,7 @@ public class RecommendedFragment extends Fragment {
                         .setLabel(((Restaurant) mListView.getItemAtPosition(position)).getBiz_key())
                         .build());
 
-                String uriString = "http://yelp.com/biz/" + ((Restaurant)mListView.getItemAtPosition(position)).getBiz_key();
+                String uriString = "http://yelp.com/biz/" + ((Restaurant) mListView.getItemAtPosition(position)).getBiz_key();
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uriString)));
             }
 
@@ -128,9 +129,14 @@ public class RecommendedFragment extends Fragment {
         int size = ApplicationState.getInstance().getOptions().getShowN();
 
         //mRestaurantArray = new Restaurant[ApplicationState.getInstance().getOptions().getShowN()];
-        for(int i=restaurantArrayList.size()-1, j=0;i>=0 && j< ApplicationState.getInstance().getOptions().getShowN() ;i--,j++)
+        for (int i = restaurantArrayList.size() - 1, j = 0; i >= 0 && j < ApplicationState.getInstance().getOptions().getShowN(); i--) {
             //  mRestaurantArray[j] = restaurantArrayList.get(i);
-            mRestaurantArrayListTopN.add(restaurantArrayList.get(i));
+            Sentiment sentiment = restaurantArrayList.get(i).getSentiment();
+            if (sentiment != null && sentiment.getSentiment() != null && "positive".equals(sentiment.getSentiment())) {
+                mRestaurantArrayListTopN.add(restaurantArrayList.get(i));
+                j++;
+            }
+        }
 
     }
 
