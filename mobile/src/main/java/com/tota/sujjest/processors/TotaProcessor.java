@@ -24,7 +24,8 @@ import java.util.ArrayList;
 public class TotaProcessor {
 
     // public final static String ALCHEMY_TEXT_SENTIMENT_ENDPOINT = "http://10.0.0.16:8080/reviewanalyzer/sentiment/review";
-    public final static String ALCHEMY_TEXT_SENTIMENT_ENDPOINT = "http://ec2-54-200-239-111.us-west-2.compute.amazonaws.com:8080/reviewanalyzer/sentiment/review";
+//    public final static String ALCHEMY_TEXT_SENTIMENT_ENDPOINT = "http://ec2-54-200-239-111.us-west-2.compute.amazonaws.com:8080/reviewanalyzer/sentiment/review";
+    public final static String ALCHEMY_TEXT_SENTIMENT_ENDPOINT = "http://sujjest.cloudapp.net/reviewanalyzer/sentiment/review";
     public final static String ALCHEMY_API_KEY = "186525230e98c5421b4c4ce3f6bcf6d37315a32c";
     private HttpURLConnection urlConnection;
 

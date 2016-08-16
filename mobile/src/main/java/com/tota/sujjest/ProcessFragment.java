@@ -287,8 +287,8 @@ public class ProcessFragment extends Fragment {
                   //  Log.d("Reviews", reviewArrayList.toString());
 
                     r.setReviews(reviewArrayList);
-                    //sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
-                    sentiment = totaProcessor.getSentiment(key, reviewArrayList);
+                    sentiment = alchemyProcessor.getSentiment(key, reviewArrayList);
+                    //sentiment = totaProcessor.getSentiment(key, reviewArrayList);
                     r.setSentiment(sentiment);
                     mLastRestaurantProcessedPosition = i;
 

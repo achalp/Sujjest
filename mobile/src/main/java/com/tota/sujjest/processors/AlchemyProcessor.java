@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
@@ -26,7 +25,9 @@ import java.util.ArrayList;
 public class AlchemyProcessor {
 
     public final static String ALCHEMY_TEXT_SENTIMENT_ENDPOINT = "http://gateway-a.watsonplatform.net/calls/text/TextGetTextSentiment";
-    public final static String ALCHEMY_API_KEY = "186525230e98c5421b4c4ce3f6bcf6d37315a32c";
+    public final static String ALCHEMY_API_KEY = "";
+
+    //            /"186525230e98c5421b4c4ce3f6bcf6d37315a32c";
     private HttpURLConnection urlConnection;
 
 
